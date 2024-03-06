@@ -1,6 +1,7 @@
 package unit
 
 // SI factors
+// ref: https://nist.gov/pml/owm/metric-si-prefixes
 const (
 	Quecto float64 = 1e-30
 	Ronto  float64 = 1e-27
@@ -12,11 +13,13 @@ const (
 	Nano   float64 = 1e-9
 	Micro  float64 = 1e-6 // 1000^-2
 	Milli  float64 = 1e-3 // 1000^-1
-	// Centi  float64 = 1e-2
-	// Deci   float64 = 1e-1
+	Centi  float64 = 1e-2 // Not used in scalesSI
+	Deci   float64 = 1e-1 // Not used in scalesSI
 
-	Unit float64 = 1e0 // Not a standard SI prefix.
+	One float64 = 1e0 // Not a standard SI prefix.
 
+	Deka   float64 = 10    // Not used in scalesSI
+	Hecto  float64 = 100   // Not used in scalesSI
 	Kilo   float64 = 1e+3  // 1000^1
 	Mega   float64 = 1e+6  // 1000^2
 	Giga   float64 = 1e+9  // 1000^3
@@ -58,7 +61,7 @@ var fakeSymbol Symbol = '_'
 var (
 	scalesIEC = []float64{
 		yocbi, zepbi, attbi, fembi, picbi, nanbi, micbi, milbi,
-		Unit,
+		One,
 		Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi,
 	}
 
@@ -72,7 +75,7 @@ var (
 var (
 	scalesSI = []float64{
 		Quecto, Ronto, Yocto, Zepto, Atto, Femto, Pico, Nano, Micro, Milli,
-		Unit,
+		One,
 		Kilo, Mega, Giga, Tera, Peta, Exa, Zetta, Yotta, Ronna, Quetta,
 	}
 	symbolsSI = []Symbol{

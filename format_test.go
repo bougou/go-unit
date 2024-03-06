@@ -28,8 +28,9 @@ func Test_Format(t *testing.T) {
 		{1023 * 1024 * 1024, IEC, "1023Mi", formatOption{false, 0, RoundMethodCeil, false, 0}},
 		{1025 * 1024 * 1024, IEC, "2 Gi", formatOption{true, 0, RoundMethodCeil, false, 0}},
 		{1010 * 1000 * 1000, SI, "1.01G", formatOption{false, 2, RoundMethodFloor, false, 0}},
-		{1001 * 1000 * 1000, SI, "1G", formatOption{}},                                     // 向下取整
+		{1001 * 1000 * 1000, SI, "1G", formatOption{}},
 		{1001 * 1000 * 1000, SI, "2G", formatOption{false, 0, RoundMethodCeil, false, 0}},  // 向上取整
+		{1999 * 1000 * 1000, SI, "1G", formatOption{false, 0, RoundMethodFloor, false, 0}}, // 向下取整
 		{1401 * 1000 * 1000, SI, "1G", formatOption{false, 0, RoundMethodRound, false, 0}}, // 四舍五入
 		{1501 * 1000 * 1000, SI, "2G", formatOption{false, 0, RoundMethodRound, false, 0}}, // 四舍五入
 		{1000 * 1000 * 1000, SI, "1.00G", formatOption{false, 2, RoundMethodFloor, false, 0}},

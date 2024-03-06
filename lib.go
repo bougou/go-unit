@@ -23,7 +23,7 @@ func getExponentScaleSymbol(val float64, mode Mode) (exp int, scale float64, sym
 		return exp, scalesIEC[scaleIndex], symbolsIEC[symbolIndex], scalesIEC[oppositeScaleIndex]
 
 	default:
-		return 0, Unit, fakeSymbol, Unit
+		return 0, One, fakeSymbol, One
 	}
 }
 
@@ -55,7 +55,7 @@ func getScaleOfSymbol(symbol rune, mode Mode) (scale float64, oppsiteScale float
 			return scales[i], scales[oppositeIndex], nil
 		}
 	}
-	return Unit, Unit, ErrInvalidSymbol
+	return One, One, ErrInvalidSymbol
 }
 
 func exponentOfValue(val float64, scales []float64) int {
