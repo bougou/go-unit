@@ -24,17 +24,18 @@ func Test_PrefixParse(t *testing.T) {
 		{"9.412 μ", Auto, 9.412 * Micro},
 		{"100m", SI, 0.1},
 		{"100 μ", Auto, 100 * Micro},
+		{"1024Yi", Auto, 1024 * Yobi},
 	}
 
 	for _, tt := range tests {
 		got, err := PrefixParse(tt.str, tt.mode)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("parse str (%s) with mode (%s) failed, err: %s\n", tt.str, tt.mode, err)
 			continue
 		}
 
 		if got != tt.expect {
-			t.Errorf("not expect, got: %v, expect: %v\n", got, tt.expect)
+			t.Errorf("parse str (%s) with mode (%s) not expect, got: %v, expect: %v\n", tt.str, tt.mode, got, tt.expect)
 			continue
 		}
 	}
