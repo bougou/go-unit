@@ -4,10 +4,10 @@ import (
 	"testing"
 )
 
-func Test_Parse(t *testing.T) {
+func Test_PrefixParse(t *testing.T) {
 	var tests = []struct {
 		str    string
-		mode   Mode
+		mode   PrefixMode
 		expect float64
 	}{
 		{"1024Mi", Auto, 1024 * 1024 * 1024},
@@ -27,7 +27,7 @@ func Test_Parse(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got, err := Parse(tt.str, tt.mode)
+		got, err := PrefixParse(tt.str, tt.mode)
 		if err != nil {
 			t.Error(err)
 			continue

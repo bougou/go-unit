@@ -2,10 +2,10 @@ package unit
 
 import "math"
 
-func getExponentScaleSymbol(val float64, mode Mode) (exp int, scale float64, symbol Symbol, oppositeScale float64) {
+func getExponentScaleSymbol(val float64, prefixMode PrefixMode) (exp int, scale float64, symbol Symbol, oppositeScale float64) {
 	val = math.Abs(val)
 
-	switch mode {
+	switch prefixMode {
 	case SI, Auto:
 		exp := exponentOfValue(val, scalesSI)
 		scaleIndex := exp + len(scalesSI)/2
@@ -27,7 +27,7 @@ func getExponentScaleSymbol(val float64, mode Mode) (exp int, scale float64, sym
 	}
 }
 
-func getScaleOfSymbol(symbol rune, mode Mode) (scale float64, oppsiteScale float64, err error) {
+func getScaleOfSymbol(symbol rune, prefixMode PrefixMode) (scale float64, oppsiteScale float64, err error) {
 	switch symbol {
 	case altKilo:
 		symbol = 'K'
@@ -38,7 +38,7 @@ func getScaleOfSymbol(symbol rune, mode Mode) (scale float64, oppsiteScale float
 	var symbols []Symbol
 	var scales []float64
 
-	switch mode {
+	switch prefixMode {
 	case Auto, SI:
 		symbols = symbolsSI
 		scales = scalesSI

@@ -1,6 +1,36 @@
 package unit
 
-// SI factors
+type PrefixMode int
+
+const (
+	// Auto mode behaves as either SI or IEC mode when `PrefixParse` string, which is determined by
+	// whether the string ends with 'i' suffix.
+	//
+	// Auto mode behaves as SI mode when `PrefixFormat` float64 value.
+	Auto PrefixMode = iota
+
+	// SI mode use 1000 base when `PrefixParse` string or `PrefixFormat` float64,
+	SI     // 1000 base, and use SI symbols (no 'i' suffix)
+	IEC    // 1024 base, and use IEC symbols (with 'i' suffix)
+	SI1024 // 1024 base, but use SI symbols when formatting
+)
+
+func (m PrefixMode) String() string {
+	switch m {
+	case Auto:
+		return "Auto"
+	case SI:
+		return "SI"
+	case SI1024:
+		return "SI1024"
+	case IEC:
+		return "IEC"
+	default:
+		return "<unknown>"
+	}
+}
+
+// SI Prefix factors
 // ref: https://nist.gov/pml/owm/metric-si-prefixes
 const (
 	Quecto float64 = 1e-30
@@ -32,7 +62,7 @@ const (
 	Quetta float64 = 1e+30
 )
 
-// IEC factors
+// IEC Prefix factors
 const (
 	yocbi float64 = 1.0 / (1 << 80)
 	zepbi float64 = 1.0 / (1 << 70)

@@ -12,8 +12,21 @@ var (
 	ErrInvalidSymbol = fmt.Errorf("invalid unit symbol")
 )
 
-// Parse converts the string s to a float64 value.
-func Parse(s string, mode Mode) (val float64, err error) {
+// PrefixParse converts the string s to a float64 value.
+// A valid input string s could be:
+//   - plain number, like: "1024"
+//   - number and SI unit prefix, like: "1024 G"
+//   - number and IEC unit prefix, like: "1024Gi"
+//
+// Note, the strings of the following formats are NOT valid:
+//   - "1024 Bytes"
+//   - "1024 Gb/s"
+//   - "1024 Kbit"
+//   - "1024 Bytes/s"
+//
+// The 'Bytes, 'Bytes/s, 'b/s', 'bit' are NOT "unix prefix", they are real "unit".
+// You should cut them out from the string before 'PrefixParse'.
+func PrefixParse(s string, mode PrefixMode) (val float64, err error) {
 	s = strings.TrimSpace(s)
 
 	if mode == Auto {

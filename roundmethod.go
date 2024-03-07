@@ -1,29 +1,5 @@
 package unit
 
-type Mode int
-
-const (
-	Auto Mode = iota
-	SI        // 1000 base
-	IEC       // 1024 base
-	SI1024
-)
-
-func (m Mode) String() string {
-	switch m {
-	case Auto:
-		return "AutoParse"
-	case SI:
-		return "SI"
-	case SI1024:
-		return "Base1024"
-	case IEC:
-		return "IEC"
-	default:
-		return "<unknown>"
-	}
-}
-
 // RoundMethod 取整方式
 type RoundMethod int
 
