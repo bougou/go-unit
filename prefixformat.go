@@ -10,7 +10,7 @@ type prefixFormatOption struct {
 	space           bool        // default false
 	precision       int         // default 0
 	roundMethod     RoundMethod // rountMethod takes effect only when precision = 0
-	roundDifference float64     // roundDifference (0 ~ 1.0) takes effect only when roundMethod is RoundMethodPercent
+	roundDifference float64     // roundDifference (0 ~ 1.0) takes effect only when roundMethod is RoundMethodDifference
 }
 
 type prefixFormatOptionFn = func(opt *prefixFormatOption)
@@ -38,8 +38,8 @@ func WithRoundMethod(roundMethod RoundMethod) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.roundMethod = roundMethod }
 }
 
-func WithRoundDifference(roundPercentage float64) prefixFormatOptionFn {
-	return func(opt *prefixFormatOption) { opt.roundDifference = roundPercentage }
+func WithRoundDifference(roundDifference float64) prefixFormatOptionFn {
+	return func(opt *prefixFormatOption) { opt.roundDifference = roundDifference }
 }
 
 // PrefixFormat2 return the formatted 'number' and 'unit prefix'.

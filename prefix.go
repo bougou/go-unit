@@ -9,10 +9,9 @@ const (
 	// Auto mode behaves as SI mode when `PrefixFormat` float64 value.
 	Auto PrefixMode = iota
 
-	// SI mode use 1000 base when `PrefixParse` string or `PrefixFormat` float64,
 	SI     // 1000 base, and use SI symbols (no 'i' suffix)
 	IEC    // 1024 base, and use IEC symbols (with 'i' suffix)
-	SI1024 // 1024 base, but use SI symbols when formatting
+	SI1024 // 1024 base, but use SI symbols
 )
 
 func (m PrefixMode) String() string {
