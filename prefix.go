@@ -3,15 +3,17 @@ package unit
 type PrefixMode int
 
 const (
-	// Auto mode behaves as either SI or IEC mode when `PrefixParse` string, which is determined by
+	// Auto mode means auto detecting and choosing the best prefix mode when parsing or formatting.
+	//
+	// When `PrefixParse` string, Auto mode behaves as either SI or IEC mode, which is determined by
 	// whether the string ends with 'i' suffix.
 	//
-	// Auto mode behaves as SI mode when `PrefixFormat` float64 value.
+	// When `PrefixFormat` float64, Auto mode behaves as SI mode.
 	Auto PrefixMode = iota
 
 	SI     // 1000 base, and use SI symbols (no 'i' suffix)
 	IEC    // 1024 base, and use IEC symbols (with 'i' suffix)
-	SI1024 // 1024 base, but use SI symbols
+	SI1024 // 1024 base, but use SI symbols (no 'i' suffix)
 )
 
 func (m PrefixMode) String() string {

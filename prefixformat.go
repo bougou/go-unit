@@ -122,11 +122,10 @@ func PrefixFormat(val float64, prefixMode PrefixMode, prefixFormatOptionFns ...p
 
 	number, prefix := PrefixFormat2(val, prefixMode, prefixFormatOptionFns...)
 
-	format := "%s"
+	format := "%s%s"
 	if option.space {
-		format += " "
+		format = "%s %s"
 	}
-	format += "%s"
 
 	return fmt.Sprintf(format, number, prefix)
 }
