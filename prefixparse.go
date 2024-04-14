@@ -46,7 +46,7 @@ func PrefixParse(s string, mode PrefixMode) (val float64, err error) {
 		prefix = ""
 	}
 	number = strings.TrimSpace(number)
-	number = strings.ReplaceAll(number, ",", "")
+	number = TrimDelimiter(number)
 
 	var symbol rune
 
