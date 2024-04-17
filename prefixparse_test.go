@@ -26,6 +26,7 @@ func Test_PrefixParse(t *testing.T) {
 		{"9M", SI1024, 9 * 1024 * 1024},
 		{"9.412 μ", Auto, 9.412 * Micro},
 		{"100m", SI, 0.1},
+		{"0.1", SI, 0.1},
 		{"100 μ", Auto, 100 * Micro},
 		{"1024Yi", Auto, 1024 * Yobi},
 	}

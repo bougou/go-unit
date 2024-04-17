@@ -14,18 +14,20 @@ var (
 
 // PrefixParse converts the string s to a float64 value.
 // A valid input string s could be:
-//   - plain number, like: "1024"
+//   - plain number, like: "1024", or "0.5"
 //   - number and SI unit prefix, like: "1024 G"
 //   - number and IEC unit prefix, like: "1024Gi"
 //
 // Note, the strings of the following formats are NOT valid:
-//   - "1024 Bytes"
-//   - "1024 Gb/s"
-//   - "1024 Kbit"
-//   - "1024 Bytes/s"
+//   - "1024 MiB"        -> Valid: "1024 Mi"
+//   - "1024 Bytes"      -> Valid: "1024"
+//   - "1024 Bytes/s"    -> Valid: "1024"
+//   - "1024 Gb/s"       -> Valid: "1024 G"
+//   - "1024 Kbit"       -> Valid: "1024 K"
+//   - "1024 bps"        -> Valid: "1024"
 //
-// The 'Bytes, 'Bytes/s, 'b/s', 'bit' are NOT "unix prefix", they are real "unit".
-// You should cut them out from the string before 'PrefixParse'.
+// The "MiB", 'Bytes, 'Bytes/s, 'Gb/s', 'Kbit', "bps" are NOT "unix prefix", they are real "unit".
+// You should just keep the "unit prefix" part of the "unit" before calling 'PrefixParse'.
 func PrefixParse(s string, mode PrefixMode) (val float64, err error) {
 	s = strings.TrimSpace(s)
 
