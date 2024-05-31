@@ -34,8 +34,8 @@ func (m PrefixMode) String() string {
 // SI Prefix factors
 // ref: https://nist.gov/pml/owm/metric-si-prefixes
 const (
-	Quecto float64 = 1e-30
-	Ronto  float64 = 1e-27
+	Quecto float64 = 1e-30 // 亏[科托]
+	Ronto  float64 = 1e-27 // 柔[托]
 	Yocto  float64 = 1e-24
 	Zepto  float64 = 1e-21
 	Atto   float64 = 1e-18
@@ -59,8 +59,8 @@ const (
 	Exa    float64 = 1e+18 // 1000^6
 	Zetta  float64 = 1e+21
 	Yotta  float64 = 1e+24
-	Ronna  float64 = 1e+27
-	Quetta float64 = 1e+30
+	Ronna  float64 = 1e+27 // 容[那]
+	Quetta float64 = 1e+30 // 昆[它]
 )
 
 // IEC Prefix factors
