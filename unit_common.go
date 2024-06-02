@@ -1,6 +1,24 @@
 package unit
 
+import "fmt"
+
+type Dimension string
+
+const (
+	DimensionLength     Dimension = "length"
+	DimensionMass       Dimension = "mass"
+	DimensionTime       Dimension = "time"
+	DimensionCurrent    Dimension = "current"
+	DimensionLuminosity Dimension = "luminosity"
+)
+
 type Unit string
+
+type Expression struct {
+	Number float64
+	Prefix string
+	Unit   Unit
+}
 
 const (
 	// 长度
@@ -13,8 +31,23 @@ const (
 
 	// 7个严格定义的基本单位是：长度（米）、质量（千克）、时间（秒）、电流（安培）、热力学温度（开尔文）、物质的量（摩尔）和发光强度（坎德拉）。
 
+	// 长度
+	LengthMeter Unit = "meter"
+
 	// 时间
-	TimeSeconds Unit = "second"
+	TimeSecond Unit = "second" // 秒
+	TimeMinute Unit = "minute" // 分
+	TimeHour   Unit = "hour"
+
+	// 电流
+	CurrentAmepere Unit = "amepere" // 安培
+
+	// 质量
+	MassKilogram Unit = "kilogram" // 千克
+	MassGram     Unit = "gram"     // 克
+
+	// 发光强度
+	LuminosityCandela Unit = "candela" // 坎德拉
 
 	PPM Unit = "ppm"
 
@@ -24,14 +57,103 @@ const (
 	MathPercentage Unit = "percentage" // 百分比，去掉 %之后的数字（0-100）
 )
 
-type UnitInfo struct {
-	Unit Unit   // 单位的符号
-	Sign string // 单位的符号
-
-	Name string // 单位的名称 (秒)
-
+type UnitDef struct {
+	Unit    Unit   // 单位
+	Sign    string // 单位符号
 	PhySign string // 物理量符号
+
+	Name      string // 单位的名称 (秒)
+	Canonical string // Sigular
+	Symbol    string //
+	Alias     []string
+
+	// If Plural is empty "", automatically deals with plurals built by adding 's' to the singular form;
+	// plural forms that don't follow this rule should be instead explicitly listed as aliases.
+	Plural string
+
+	Relation  *Relation // 与基本单位之间的转换关系
+	Dimension Dimension // 维度
 }
+
+func (u Unit) Valid() (string, bool) {
+	udef, exists := ALL[u]
+	if !exists {
+		return "no UnitDef exists", false
+	}
+
+	if udef.Relation == nil && udef.Dimension == "" {
+		return "can find base unit", false
+	}
+
+	dimension, baseUnit, err := u.Base()
+	if err != nil {
+		return fmt.Sprintf("%v", err), false
+	}
+
+	baseDimension, _, err := baseUnit.Base()
+	if err != nil {
+		return fmt.Sprintf("%v", err), false
+	}
+
+	if dimension != baseDimension {
+		return fmt.Sprintf("unit dimension (%s) not matched with base unit dimension (%s)", dimension, baseDimension), false
+	}
+
+	if dimension == "" {
+		return "unit dimension is empty", false
+	}
+
+	return "", true
+}
+
+func (u Unit) IsBase() (Dimension, bool) {
+	_, exists := ALL[u]
+	if !exists {
+		return "", false
+	}
+
+	dimension, baseUnit, err := u.Base()
+	if err != nil {
+		return "", false
+	}
+
+	if u == baseUnit {
+		return dimension, true
+	}
+
+	return "", false
+}
+
+// Base return the Dimension and the base Unit for Unit m.
+func (u Unit) Base() (dimension Dimension, baseUnit Unit, err error) {
+
+	loopUnit := u
+
+	for {
+		udef, exists := ALL[loopUnit]
+		if !exists {
+			err = fmt.Errorf("not found")
+			return
+		}
+
+		if dimension == "" && udef.Dimension != "" {
+			dimension = udef.Dimension
+		}
+
+		if udef.Relation == nil {
+			baseUnit = loopUnit
+			return
+		}
+
+		loopUnit = udef.Relation.Unit
+	}
+}
+
+type Relation struct {
+	Factor float64
+	Unit   Unit
+}
+
 type SensorUnitType uint8
 
 const (

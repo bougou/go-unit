@@ -31,7 +31,7 @@ func (m PrefixMode) String() string {
 	}
 }
 
-// SI Prefix factors
+// SI Prefix factors (Decimal Prefixes)
 // ref: https://nist.gov/pml/owm/metric-si-prefixes
 const (
 	Quecto float64 = 1e-30 // 亏[科托]
@@ -63,7 +63,7 @@ const (
 	Quetta float64 = 1e+30 // 昆[它]
 )
 
-// IEC Prefix factors
+// IEC Prefix factors (Binary Prefixes)
 const (
 	yocbi float64 = 1.0 / (1 << 80)
 	zepbi float64 = 1.0 / (1 << 70)

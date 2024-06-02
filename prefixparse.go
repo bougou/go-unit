@@ -26,7 +26,8 @@ var (
 //   - "1024 Kbit"       -> Valid: "1024 K"
 //   - "1024 bps"        -> Valid: "1024"
 //
-// The "MiB", 'Bytes, 'Bytes/s, 'Gb/s', 'Kbit', "bps" are NOT "unix prefix", they are real "unit".
+// The "MiB", 'Bytes, 'Bytes/s, 'Gb/s', 'Kbit', "bps" are NOT "unix prefix",
+// they are real "unit" or combination of "unit prefix" and "unit".
 // You should just keep the "unit prefix" part of the "unit" before calling 'PrefixParse'.
 func PrefixParse(s string, mode PrefixMode) (val float64, err error) {
 	s = strings.TrimSpace(s)
@@ -61,6 +62,7 @@ func PrefixParse(s string, mode PrefixMode) (val float64, err error) {
 				symbol = c
 
 			case 1:
+				// meas we found second chars in the prefix.
 				if mode != IEC {
 					return val, ErrSyntax
 				}
