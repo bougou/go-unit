@@ -1,4 +1,4 @@
-package unit
+package u
 
 import (
 	"bytes"
@@ -6,17 +6,21 @@ import (
 	"strings"
 )
 
+// NumberDelimiter selects a thousands separator for DelimitInt.
 type NumberDelimiter rune
 
 const (
-	NumberDelimiterNone       = NumberDelimiter(0)   // "1234"
-	NumberDelimiterComma      = NumberDelimiter(',') // "1,234"
-	NumberDelimiterUnderscore = NumberDelimiter('_') // "1_234"
-	NumberDelimiterSpace      = NumberDelimiter(' ') // "1 234"
-	NumberDelimiterThinSpace  = NumberDelimiter(' ') // "1 234", U+2009
-	NumberDelimiterDot        = NumberDelimiter('.') // "1.234"
+	NumberDelimiterNone       = NumberDelimiter(0)   // 1234
+	NumberDelimiterComma      = NumberDelimiter(',') // 1,234
+	NumberDelimiterUnderscore = NumberDelimiter('_') // 1_234
+	NumberDelimiterSpace      = NumberDelimiter(' ') // 1 234
+	NumberDelimiterThinSpace  = NumberDelimiter(' ') // 1 234 (U+2009)
+	NumberDelimiterDot        = NumberDelimiter('.') // 1.234
 )
 
+// DelimitInt formats n with a thousands separator.
+//
+// Example: DelimitInt(1234567, NumberDelimiterComma) // "1,234,567"
 func DelimitInt(n int64, delimiter NumberDelimiter) string {
 	if delimiter == NumberDelimiterNone {
 		return strconv.FormatInt(n, 10)
@@ -47,18 +51,21 @@ func DelimitInt(n int64, delimiter NumberDelimiter) string {
 	}
 }
 
+// TrimDelimiter removes common thousands separators from s.
+// Used by PrefixParse before parsing the numeric part.
+// Dot separators are intentionally not removed because they may be decimal points.
 func TrimDelimiter(s string) string {
 	out := strings.ReplaceAll(s, string(NumberDelimiterComma), "")
 	out = strings.ReplaceAll(out, string(NumberDelimiterUnderscore), "")
 	out = strings.ReplaceAll(out, string(NumberDelimiterSpace), "")
 	out = strings.ReplaceAll(out, string(NumberDelimiterThinSpace), "")
 
-	// out = strings.ReplaceAll(out, string(NumberDelimiterDot), "")
 	return out
 }
 
-// ref: https://stackoverflow.com/questions/13020308/how-to-fmt-printf-an-integer-with-thousands-comma
-// ref: https://gosamples.dev/print-number-thousands-separator/
+// CommaInt formats n with comma thousands separators.
+//
+// Example: CommaInt(1234567) // "1,234,567"
 func CommaInt(n int64) string {
 	in := strconv.FormatInt(n, 10)
 	numOfDigits := len(in)
@@ -84,6 +91,9 @@ func CommaInt(n int64) string {
 	}
 }
 
+// CommaFloat formats val with comma thousands separators and fixed precision.
+//
+// Example: CommaFloat(1234.5, 1) // "1,234.5"
 func CommaFloat(val float64, precision int) string {
 	buf := &bytes.Buffer{}
 	if val < 0 {

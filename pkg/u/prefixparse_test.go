@@ -1,8 +1,29 @@
-package unit
+package u
 
 import (
 	"testing"
 )
+
+func Test_PrefixParseInvalid(t *testing.T) {
+	tests := []struct {
+		str  string
+		mode PrefixMode
+	}{
+		{"1024 MiB", IEC},
+		{"1024 Mx", IEC},
+		{"1024 Mx", ForceIEC},
+		{"1024 Mx", ForceSI},
+		{"1024 Bytes", SI},
+		{"1024 Mi", SI},
+	}
+
+	for _, tt := range tests {
+		_, err := PrefixParse(tt.str, tt.mode)
+		if err == nil {
+			t.Errorf("parse str (%s) with mode (%s) should fail", tt.str, tt.mode)
+		}
+	}
+}
 
 func Test_PrefixParse(t *testing.T) {
 	var tests = []struct {
@@ -15,6 +36,11 @@ func Test_PrefixParse(t *testing.T) {
 		{"1_024_000Mi", Auto, 1024 * 1024 * 1024 * 1000},
 		{"1 024 000 Mi", Auto, 1024 * 1024 * 1024 * 1000},
 		{"1 024 000 Mi", Auto, 1024 * 1024 * 1024 * 1000},
+		{"1 024 000 Mi", IEC, 1024 * 1024 * 1024 * 1000},
+		{"1 024 000 Mi", ForceSI, 1024 * 1000 * 1000 * 1000},
+		{"1 024 000 M", ForceSI, 1024 * 1000 * 1000 * 1000},
+		{"1 024 000 Mi", ForceIEC, 1024 * 1024 * 1024 * 1000},
+		{"1 024 000 M", ForceIEC, 1024 * 1024 * 1024 * 1000},
 		{"1024Ki", Auto, 1048576},
 		{"1024 Ki", Auto, 1024 * 1024},
 		{"1024   Ki", Auto, 1024 * 1024},

@@ -1,4 +1,4 @@
-package unit
+package u
 
 import (
 	"testing"

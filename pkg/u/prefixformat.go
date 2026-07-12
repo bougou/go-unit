@@ -1,4 +1,4 @@
-package unit
+package u
 
 import (
 	"fmt"
@@ -9,8 +9,9 @@ import (
 type prefixFormatOption struct {
 	space           bool        // default false
 	precision       int         // default 0
-	roundMethod     RoundMethod // rountMethod takes effect only when precision = 0
-	roundDifference float64     // roundDifference (0 ~ 1.0) takes effect only when roundMethod is RoundMethodDifference
+	roundMethod     RoundMethod // applies only when precision is 0
+	roundDifference float64     // applies only when roundMethod is RoundMethodDifference
+	prefix          Symbol
 }
 
 type prefixFormatOptionFn = func(opt *prefixFormatOption)
@@ -26,24 +27,33 @@ func newPrefixFormatOption(optionFns ...prefixFormatOptionFn) prefixFormatOption
 	return option
 }
 
+// WithPrefix forces a specific prefix symbol instead of auto-selecting from val.
+func WithPrefix(prefix Symbol) prefixFormatOptionFn {
+	return func(opt *prefixFormatOption) { opt.prefix = prefix }
+}
+
+// WithSpace inserts a space between the number and prefix in PrefixFormat output.
 func WithSpace(space bool) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.space = space }
 }
 
+// WithPrecision sets decimal places in the formatted number. Zero uses RoundMethod.
 func WithPrecision(precision int) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.precision = precision }
 }
 
+// WithRoundMethod sets how PrefixFormat rounds when precision is zero.
 func WithRoundMethod(roundMethod RoundMethod) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.roundMethod = roundMethod }
 }
 
+// WithRoundDifference sets the fractional threshold for RoundMethodDifference (0–1).
 func WithRoundDifference(roundDifference float64) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.roundDifference = roundDifference }
 }
 
-// PrefixFormat2 return the formatted 'number' and 'unit prefix'.
-// eg: float64(1048576) -> "1", "Mi"
+// PrefixFormat2 returns the formatted number and numeric prefix separately.
+// Example: PrefixFormat2(1048576, IEC) // "1", "Mi"
 func PrefixFormat2(val float64, prefixMode PrefixMode, prefixFormatOptionFns ...prefixFormatOptionFn) (number string, prefix string) {
 	option := newPrefixFormatOption(prefixFormatOptionFns...)
 
@@ -61,7 +71,7 @@ func PrefixFormat2(val float64, prefixMode PrefixMode, prefixFormatOptionFns ...
 
 	if symbol != fakeSymbol {
 		switch prefixMode {
-		case IEC:
+		case IEC, ForceIEC:
 			prefix = string(symbol) + "i"
 		default:
 			prefix = string(symbol)
@@ -89,7 +99,7 @@ func PrefixFormat2(val float64, prefixMode PrefixMode, prefixFormatOptionFns ...
 				roundDifference = option.roundDifference
 			}
 
-			// diff := math.Abs(val - float64(int64(val)))
+			// Fractional part used by RoundMethodDifference.
 			if val >= 0 {
 				difference := val - math.Floor(val)
 				if difference >= roundDifference {
@@ -113,14 +123,18 @@ func PrefixFormat2(val float64, prefixMode PrefixMode, prefixFormatOptionFns ...
 	return fmt.Sprintf(numberFormat, val), prefix
 }
 
-// PrefixFormat converts float64 val to a formatted string of 'number and unit prefix'.
-// eg: float64(1048576) -> "1 Mi" or "1Mi", or "1M", or "1 M" or "1.00 M" or or "1.048 M"  or ...
+// PrefixFormat converts val to a formatted "number prefix" string.
+// Example: PrefixFormat(1048576, IEC) // "1 Mi", "1Mi", "1 M", etc. depending on options.
 //
-// You can use PrefixFormat2 function to get separate 'number' and 'unit prefix'.
+// Use PrefixFormat2 to obtain the number and prefix separately.
 func PrefixFormat(val float64, prefixMode PrefixMode, prefixFormatOptionFns ...prefixFormatOptionFn) string {
 	option := newPrefixFormatOption(prefixFormatOptionFns...)
 
 	number, prefix := PrefixFormat2(val, prefixMode, prefixFormatOptionFns...)
+
+	if prefix == "" {
+		return number
+	}
 
 	format := "%s%s"
 	if option.space {

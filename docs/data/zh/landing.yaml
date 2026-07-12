@@ -1,0 +1,69 @@
+hero:
+  enable: true
+  weight: 10
+  template: hero
+  backgroundImage:
+    path: "images/templates/hero"
+    filename:
+      desktop: "gradient-desktop.webp"
+      mobile: "gradient-mobile.webp"
+  title: "go-unit"
+  subtitle: 面向 Go 的**物理量**库，支持 SI 感知的单位、量纲、换算与**编译期量纲安全**。
+  ctaButton:
+    icon: rocket_launch
+    btnText: "开始阅读"
+    url: "docs/concepts/dimensions/"
+  cta2Button:
+    icon: code
+    btnText: "API 参考"
+    url: "https://pkg.go.dev/github.com/bougou/go-unit/pkg/u"
+  info: "**Apache License 2.0** · `go get github.com/bougou/go-unit/pkg/u`"
+
+featureGrid:
+  enable: true
+  weight: 20
+  template: feature grid
+  title: 特性
+  subtitle: SI 量纲、导出单位、类型化物理量与数值词头，集中在一个轻量库中。
+  items:
+    - title: SI 基本量纲
+      icon: straighten
+      description: 七大基本量纲 — 长度、质量、时间、电流、温度、物质的量、发光强度。
+    - title: 导出单位
+      icon: functions
+      description: 组合 km/h、N、Pa 等单位，支持 SI 专用名称与符号格式化。
+    - title: 类型化物理量
+      icon: verified
+      description: LengthQuantity、TimeQuantity 等，编译期量纲检查。
+    - title: 仿射换算
+      icon: swap_horiz
+      description: 比例单位（km → m）与零点偏移单位（°C → K）。
+    - title: 数值词头
+      icon: numbers
+      description: SI（1000）与 IEC（1024）解析/格式化，与物理单位分离。
+    - title: 字符串解析
+      icon: text_fields
+      description: QuantityParse、类型化 XxxQuantityParse 与 DerivedQuantityParse。
+
+quickStart:
+  enable: true
+  weight: 30
+  template: image text
+  title: 快速上手
+  subtitle: "类型化物理量在编译期保证量纲一致："
+  list:
+    - icon: check_circle
+      text: "`speed := u.Length(10, u.Kilometer).Div(u.Time(2, u.Hour))` → **5 km/h**"
+    - icon: check_circle
+      text: "`u.Length(1000, u.Meter).By(u.Kilometer)` → **1 km**"
+    - icon: check_circle
+      text: "`u.DerivedQuantity(100, u.Newton)` 支持 SI 专用名称与组合符号"
+  ctaButton:
+    text: "指南：类型化物理量、运算、词头 →"
+    url: "docs/guides/typed-quantities/"
+  imgOrder:
+    desktop: 1
+    mobile: 1
+
+imageCompare:
+  enable: false

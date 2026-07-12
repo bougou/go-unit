@@ -1,0 +1,176 @@
+package u
+
+import "sort"
+
+// DerivedDimension (导出量纲) is the dimension of a derived physical quantity, expressed as
+// exponents on the seven SI (国际单位制) base dimensions.
+//
+// In SI, the seven base dimensions (DimLength, DimMass, DimTime, DimCurrent, DimTemperature, DimAmount, DimLuminous) describe
+// fundamental quantities. DerivedDimension and DerivedUnit (导出单位) describe derived
+// quantities and their concrete unit combinations (e.g. speed: L¹T⁻¹, km·h⁻¹).
+//
+// Read each field as "this base dimension raised to that power". Omitted dimensions
+// are zero. For example:
+//
+//	{L: 1, T: -1}        → speed     (m/s, km/h)
+//	{M: 1, L: 1, T: -2}  → force     (N = kg·m/s²)
+//	{M: 1, L: -1, T: -2} → pressure  (Pa)
+//
+// Two derived quantities can be added or subtracted only when their DerivedDimension
+// values are equal. Multiplying quantities adds exponents; dividing subtracts them.
+//
+// Symbol mapping (same as Dimension.Symbol):
+//
+//	L → length (长度，meter 米)
+//	M → mass (质量，kilogram 千克)
+//	T → time (时间，second 秒)
+//	I → electric current (电流，ampere 安培)
+//	Θ → thermodynamic temperature (热力学温度，kelvin 开尔文)
+//	N → amount of substance (物质的量，mole 摩尔)
+//	J → luminous intensity (发光强度，candela 坎德拉)
+type DerivedDimension struct {
+	L int8 // length (长度) exponent
+	M int8 // mass (质量) exponent
+	T int8 // time (时间) exponent
+	I int8 // electric current (电流) exponent
+	H int8 // thermodynamic temperature (热力学温度) exponent
+	N int8 // amount of substance (物质的量) exponent
+	J int8 // luminous intensity (发光强度) exponent
+}
+
+// Equal reports whether two derived dimensions are identical.
+// Quantities can be added only when dimensions are equal.
+func (d DerivedDimension) Equal(o DerivedDimension) bool {
+	return d == o
+}
+
+// Add combines dimensions as multiplication of quantities does.
+func (d DerivedDimension) Add(o DerivedDimension) DerivedDimension {
+	return DerivedDimension{
+		L: d.L + o.L,
+		M: d.M + o.M,
+		T: d.T + o.T,
+		I: d.I + o.I,
+		H: d.H + o.H,
+		N: d.N + o.N,
+		J: d.J + o.J,
+	}
+}
+
+// Sub combines dimensions as division of quantities does.
+func (d DerivedDimension) Sub(o DerivedDimension) DerivedDimension {
+	return DerivedDimension{
+		L: d.L - o.L,
+		M: d.M - o.M,
+		T: d.T - o.T,
+		I: d.I - o.I,
+		H: d.H - o.H,
+		N: d.N - o.N,
+		J: d.J - o.J,
+	}
+}
+
+func (d DerivedDimension) addDimension(dim Dimension, exp int8) DerivedDimension {
+	switch dim {
+	case DimLength:
+		d.L += exp
+	case DimMass:
+		d.M += exp
+	case DimTime:
+		d.T += exp
+	case DimCurrent:
+		d.I += exp
+	case DimTemperature:
+		d.H += exp
+	case DimAmount:
+		d.N += exp
+	case DimLuminous:
+		d.J += exp
+	}
+	return d
+}
+
+// Symbol renders the dimension as single-letter exponents, e.g. "M·L·T^-2".
+//
+// Example: d.Symbol(WithExpSign(ExpSignSup)) // "M·L·T⁻²"
+func (d DerivedDimension) Symbol(options ...SymbolOption) string {
+	opt := symbolOptions(options)
+	return symbolFromDimensionExponents(dimensionExponents(d, &opt), &opt)
+}
+
+type dimensionExponent struct {
+	dimension Dimension
+	exp       int8
+}
+
+func dimensionExponents(d DerivedDimension, opt *symbolOption) []dimensionExponent {
+	candidates := []dimensionExponent{
+		{DimMass, d.M},
+		{DimLength, d.L},
+		{DimTime, d.T},
+		{DimCurrent, d.I},
+		{DimTemperature, d.H},
+		{DimAmount, d.N},
+		{DimLuminous, d.J},
+	}
+	terms := make([]dimensionExponent, 0, len(candidates))
+	for _, t := range candidates {
+		if t.exp == 0 {
+			continue
+		}
+		terms = append(terms, t)
+	}
+	sort.Slice(terms, func(i, j int) bool {
+		return dimensionOrderRank(terms[i].dimension, opt.dimOrder) <
+			dimensionOrderRank(terms[j].dimension, opt.dimOrder)
+	})
+	return terms
+}
+
+func symbolFromDimensionExponents(terms []dimensionExponent, opt *symbolOption) string {
+	mul := string(opt.mulSign)
+
+	if opt.divSign == DivSignSlash {
+		num := make([]string, 0, len(terms))
+		den := make([]string, 0, len(terms))
+		for _, t := range terms {
+			sign := t.dimension.Symbol()
+			if t.exp > 0 {
+				num = append(num, formatTermSign(sign, t.exp, opt))
+				continue
+			}
+			den = append(den, formatTermSign(sign, -t.exp, opt))
+		}
+		if len(num) == 0 && len(den) == 0 {
+			return ""
+		}
+		if len(den) == 0 {
+			return joinSymbolParts(num, mul)
+		}
+		denStr := joinSymbolParts(den, mul)
+		if len(den) > 1 {
+			denStr = "(" + denStr + ")"
+		}
+		if len(num) == 0 {
+			return "1/" + denStr
+		}
+		return joinSymbolParts(num, mul) + "/" + denStr
+	}
+
+	parts := make([]string, 0, len(terms))
+	for _, t := range terms {
+		parts = append(parts, formatTermSign(t.dimension.Symbol(), t.exp, opt))
+	}
+	return joinSymbolParts(parts, mul)
+}
+
+func joinSymbolParts(parts []string, mul string) string {
+	if len(parts) == 0 {
+		return ""
+	}
+	out := parts[0]
+	for _, part := range parts[1:] {
+		out += mul + part
+	}
+	return out
+}

@@ -1,0 +1,14 @@
+.vscode
+.venv/
+.python-version
+
+# Docs build output and Hugo cache
+docs/public/
+docs/resources/
+docs/.hugo_build.lock
+
+# Legacy root build artifacts (if present)
+public/
+site/
+.cache/
+.tool-versions

@@ -1,0 +1,69 @@
+hero:
+  enable: true
+  weight: 10
+  template: hero
+  backgroundImage:
+    path: "images/templates/hero"
+    filename:
+      desktop: "gradient-desktop.webp"
+      mobile: "gradient-mobile.webp"
+  title: "go-unit"
+  subtitle: A Go library for **physical quantities** with SI-aware units, dimensions, conversions, and compile-time dimension safety.
+  ctaButton:
+    icon: rocket_launch
+    btnText: "Get Started"
+    url: "docs/concepts/dimensions/"
+  cta2Button:
+    icon: code
+    btnText: "API Reference"
+    url: "https://pkg.go.dev/github.com/bougou/go-unit/pkg/u"
+  info: "**Apache License 2.0** · `go get github.com/bougou/go-unit/pkg/u`"
+
+featureGrid:
+  enable: true
+  weight: 20
+  template: feature grid
+  title: Features
+  subtitle: SI dimensions, derived units, typed quantities, and numeric prefixes in one focused library.
+  items:
+    - title: SI base dimensions
+      icon: straighten
+      description: Seven base dimensions — length, mass, time, current, temperature, amount, and luminous intensity.
+    - title: Derived units
+      icon: functions
+      description: Build compound units (km/h, N, Pa) with optional SI special names and symbol formatting.
+    - title: Typed quantities
+      icon: verified
+      description: LengthQuantity, TimeQuantity, and more for compile-time dimension checks.
+    - title: Affine conversion
+      icon: swap_horiz
+      description: Ratio units (km → m) and offset units (°C → K) within the same dimension.
+    - title: Numeric prefixes
+      icon: numbers
+      description: SI (1000) and IEC (1024) parse/format helpers, separate from physical units.
+    - title: String parsing
+      icon: text_fields
+      description: QuantityParse, typed XxxQuantityParse, and DerivedQuantityParse for human-readable input.
+
+quickStart:
+  enable: true
+  weight: 30
+  template: image text
+  title: Quick start
+  subtitle: "Typed quantities keep dimensions consistent at compile time:"
+  list:
+    - icon: check_circle
+      text: "`speed := u.Length(10, u.Kilometer).Div(u.Time(2, u.Hour))` → **5 km/h**"
+    - icon: check_circle
+      text: "`u.Length(1000, u.Meter).By(u.Kilometer)` → **1 km**"
+    - icon: check_circle
+      text: "`u.DerivedQuantity(100, u.Newton)` with SI special names and compound symbols"
+  ctaButton:
+    text: "Guides: typed quantities, arithmetic, prefixes →"
+    url: "docs/guides/typed-quantities/"
+  imgOrder:
+    desktop: 1
+    mobile: 1
+
+imageCompare:
+  enable: false
