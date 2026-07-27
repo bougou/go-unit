@@ -13,10 +13,10 @@
 - **Derived dimensions and units** — build compound units (e.g. km/h, N, Pa) with optional SI special names
 - **Typed quantities** — `LengthQuantity`, `TimeQuantity`, … for compile-time dimension checks
 - **Affine conversion** — ratio units (km → m) and offset units (°C → K)
-- **Symbol formatting** — configurable compound symbols (`km·h⁻¹`, `km/h`, `N`)
+- **Symbol formatting** — configurable compound symbols (`km·h⁻¹`, `km/h`, `N`) via `FormatOption`
 - **Numeric prefixes** — SI (1000) and IEC (1024) parse/format helpers, separate from physical units
 - **String parsing** — `QuantityParse`, typed `XxxQuantityParse`, and `DerivedQuantityParse`
-- **Number formatting** — thousands separators via `DelimitInt` / `CommaFloat`
+- **Number formatting** — quantity `Format`, plus `DelimitInt` / `DelimitFloat` / `CommaFloat`
 
 ## Installation
 
@@ -39,16 +39,18 @@ import (
 
 func main() {
 	// Typed quantities with compile-time dimension safety
-	d := u.Length(10, u.Kilometer)
+	d := u.Length(10, u.Meter.Prefix(u.Kilo))
 	t := u.Time(2, u.Hour)
 	speed := d.Div(t) // DerivedQuantity: 5 km/h
 	fmt.Println(speed.String())
 
 	// Unit conversion within the same dimension
-	fmt.Println(u.Length(1000, u.Meter).By(u.Kilometer)) // 1 km
+	fmt.Println(u.Length(1000, u.Meter).By(u.Meter.Prefix(u.Kilo))) // 1 km
+	fmt.Println(u.Length(1000, u.Meter).Prefix(u.Kilo))           // 1 km (equivalent)
+	fmt.Println(u.Ohm.Of(2e6).Prefix(u.Mega).Format(u.WithNamedSymbol(true))) // 2 MΩ
 
 	// SI special name vs compound symbol
-	fmt.Println(u.ForceUnit.Symbol(u.WithNamedSymbol(true))) // N
+	fmt.Println(u.Newton.Symbol(u.WithNamedSymbol(true))) // N
 
 	// Parse quantities from text
 	d, _ := u.LengthQuantityParse("10 km")
@@ -73,28 +75,26 @@ Full documentation is published on GitHub Pages:
 
 Conceptual reading order:
 
-1. [Dimensions](https://bougou.github.io/go-unit/docs/concepts/dimensions/) — base and derived dimensions
-2. [Units & conversion](https://bougou.github.io/go-unit/docs/concepts/units-and-conversion/) — registry, scale, offset
-3. [Quantities](https://bougou.github.io/go-unit/docs/concepts/quantities/) — values with units
-4. [Derived units](https://bougou.github.io/go-unit/docs/concepts/derived-units/) — compound units and Intern
-5. [Guides](https://bougou.github.io/go-unit/docs/guides/typed-quantities/) — typed quantities, arithmetic, prefixes
+1. [Dimensions](https://bougou.github.io/go-unit/en/concepts/dimensions/) — base and derived dimensions
+2. [Units & conversion](https://bougou.github.io/go-unit/en/concepts/units-and-conversion/) — registry, scale, offset
+3. [Quantities](https://bougou.github.io/go-unit/en/concepts/quantities/) — values with units
+4. [Derived units](https://bougou.github.io/go-unit/en/concepts/derived-units/) — compound units and Intern
+5. [Guides](https://bougou.github.io/go-unit/en/guides/typed-quantities/) — typed quantities, arithmetic, prefixes
 
 API reference: [pkg.go.dev/github.com/bougou/go-unit/pkg/u](https://pkg.go.dev/github.com/bougou/go-unit/pkg/u)
 
 ## Local docs preview
 
-Install [Hugo Extended](https://gohugo.io/installation/) 0.164+ (required for Lotus Docs SCSS), then:
+Install [Node.js](https://nodejs.org/) 20+ and [pnpm](https://pnpm.io/installation), then:
 
 ```bash
 make docs-serve
 ```
 
-With [asdf](https://asdf-vm.com/): `asdf install hugo extended-0.164.0` (see `.tool-versions`).
-
 Open:
 
-- English: [http://127.0.0.1:1313/go-unit/](http://127.0.0.1:1313/go-unit/)
-- 中文: [http://127.0.0.1:1313/go-unit/zh/](http://127.0.0.1:1313/go-unit/zh/)
+- English: [http://127.0.0.1:4321/go-unit/](http://127.0.0.1:4321/go-unit/)
+- 中文：[http://127.0.0.1:4321/go-unit/zh/](http://127.0.0.1:4321/go-unit/zh/)
 
 ## License
 

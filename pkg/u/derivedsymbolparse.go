@@ -4,46 +4,111 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"sync"
 	"unicode"
 )
 
 var (
 	baseUnitBySymbol    map[string]Unit
 	baseSymbolsByLength []string
-	baseSymbolIndexOnce sync.Once
 )
 
 func ensureBaseUnitSymbolIndex() {
-	baseSymbolIndexOnce.Do(func() {
-		baseUnitBySymbol = make(map[string]Unit)
-		for unit, def := range unitRegistry {
-			if def.Symbol != "" {
-				baseUnitBySymbol[def.Symbol] = unit
-			}
+	symbolIndexMu.Lock()
+	defer symbolIndexMu.Unlock()
+	if !baseSymbolDirty && baseSymbolsByLength != nil {
+		return
+	}
+	baseUnitBySymbol = make(map[string]Unit)
+	for unit, def := range unitRegistry {
+		if def.Symbol != "" {
+			baseUnitBySymbol[def.Symbol] = unit
 		}
-		baseSymbolsByLength = make([]string, 0, len(baseUnitBySymbol))
-		for sym := range baseUnitBySymbol {
-			baseSymbolsByLength = append(baseSymbolsByLength, sym)
+	}
+	baseSymbolsByLength = make([]string, 0, len(baseUnitBySymbol))
+	for sym := range baseUnitBySymbol {
+		baseSymbolsByLength = append(baseSymbolsByLength, sym)
+	}
+	sort.Slice(baseSymbolsByLength, func(i, j int) bool {
+		li, lj := len(baseSymbolsByLength[i]), len(baseSymbolsByLength[j])
+		if li != lj {
+			return li > lj
 		}
-		sort.Slice(baseSymbolsByLength, func(i, j int) bool {
-			li, lj := len(baseSymbolsByLength[i]), len(baseSymbolsByLength[j])
-			if li != lj {
-				return li > lj
-			}
-			return baseSymbolsByLength[i] < baseSymbolsByLength[j]
-		})
+		return baseSymbolsByLength[i] < baseSymbolsByLength[j]
 	})
+	baseSymbolDirty = false
 }
 
 func matchBaseUnitSymbol(s string) (Unit, int, bool) {
 	ensureBaseUnitSymbolIndex()
+	bestUnit := Unit("")
+	bestLen := 0
 	for _, sym := range baseSymbolsByLength {
-		if strings.HasPrefix(s, sym) {
-			return baseUnitBySymbol[sym], len(sym), true
+		if strings.HasPrefix(s, sym) && len(sym) > bestLen {
+			bestUnit = baseUnitBySymbol[sym]
+			bestLen = len(sym)
+		}
+	}
+	if unit, n, ok := matchPrefixedSIStemSymbol(s); ok && n > bestLen {
+		return unit, n, true
+	}
+	if bestLen > 0 {
+		return bestUnit, bestLen, true
+	}
+	return "", 0, false
+}
+
+// matchPrefixedSIStemSymbol matches "km", "mg", "mA", … as SI prefix + stem.
+func matchPrefixedSIStemSymbol(s string) (Unit, int, bool) {
+	type stem struct {
+		unit Unit
+		sym  string
+	}
+	stems := make([]stem, 0)
+	for u, def := range unitRegistry {
+		if !isSIPrefixStem(u) || def.Symbol == "" {
+			continue
+		}
+		stems = append(stems, stem{unit: u, sym: def.Symbol})
+	}
+	sort.Slice(stems, func(i, j int) bool {
+		li, lj := len(stems[i].sym), len(stems[j].sym)
+		if li != lj {
+			return li > lj
+		}
+		return stems[i].sym < stems[j].sym
+	})
+
+	for _, st := range stems {
+		// Try each SI prefix in front of the stem (longest prefix first: "da" before "d").
+		for _, p := range siUnitPrefixesLongestFirst() {
+			cand := p.Symbol + st.sym
+			if strings.HasPrefix(s, cand) {
+				return prefixedBaseUnit(st.unit, p.Factor), len(cand), true
+			}
+		}
+		// ASCII micro
+		candU := "u" + st.sym
+		if strings.HasPrefix(s, candU) {
+			return prefixedBaseUnit(st.unit, Micro), len(candU), true
+		}
+		candMicro := "µ" + st.sym
+		if strings.HasPrefix(s, candMicro) {
+			return prefixedBaseUnit(st.unit, Micro), len(candMicro), true
 		}
 	}
 	return "", 0, false
+}
+
+func siUnitPrefixesLongestFirst() []siUnitPrefix {
+	out := append([]siUnitPrefix(nil), siUnitPrefixes...)
+	sort.Slice(out, func(i, j int) bool {
+		li, lj := len(out[i].Symbol), len(out[j].Symbol)
+		if li != lj {
+			return li > lj
+		}
+		return out[i].Symbol < out[j].Symbol
+	})
+	return out
 }
 
 // DerivedUnitParse parses a derived unit symbol composed of registered base-unit
@@ -396,6 +461,15 @@ func lookupUnitSymbolOrDerived(symbol string) (Unit, bool) {
 	if unit, ok := lookupUnitSymbol(symbol); ok {
 		return unit, true
 	}
+	if unit, ok := lookupPrefixedBaseUnit(symbol); ok {
+		registerUnitSymbol(symbol, unit)
+		return unit, true
+	}
+	if du, ok := lookupPrefixedSpecialName(symbol); ok {
+		key := du.Key()
+		registerUnitSymbol(symbol, key)
+		return key, true
+	}
 	du, err := DerivedUnitParse(symbol)
 	if err != nil {
 		return "", false
@@ -403,4 +477,73 @@ func lookupUnitSymbolOrDerived(symbol string) (Unit, bool) {
 	key := du.Key()
 	registerUnitSymbol(symbol, key)
 	return key, true
+}
+
+// lookupPrefixedBaseUnit resolves SI-prefixed base stems such as "km", "mg", "μA".
+func lookupPrefixedBaseUnit(symbol string) (Unit, bool) {
+	unit, n, ok := matchPrefixedSIStemSymbol(symbol)
+	if !ok || n != len(symbol) {
+		return "", false
+	}
+	return unit, true
+}
+
+// lookupPrefixedSpecialName resolves SI-prefixed special names such as "MΩ", "kN", "μA" is base.
+// ASCII "u" is accepted as micro (μ).
+func lookupPrefixedSpecialName(symbol string) (*DerivedUnit, bool) {
+	type candidate struct {
+		unit *DerivedUnit
+		sym  string
+	}
+	candidates := make([]candidate, 0)
+	seen := make(map[string]struct{})
+	for _, du := range derivedRegistry {
+		if du == nil || du.specialSymbol == "" || du.effectivePrefixScale() != 1 {
+			continue
+		}
+		if _, ok := seen[du.specialSymbol]; ok {
+			continue
+		}
+		seen[du.specialSymbol] = struct{}{}
+		candidates = append(candidates, candidate{unit: du, sym: du.specialSymbol})
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		li, lj := len(candidates[i].sym), len(candidates[j].sym)
+		if li != lj {
+			return li > lj
+		}
+		return candidates[i].sym < candidates[j].sym
+	})
+
+	for _, c := range candidates {
+		if symbol == c.sym {
+			return c.unit, true
+		}
+		if !strings.HasSuffix(symbol, c.sym) {
+			continue
+		}
+		prefixPart := symbol[:len(symbol)-len(c.sym)]
+		if prefixPart == "" {
+			return c.unit, true
+		}
+		factor, ok := siPrefixFactorFromSymbol(prefixPart)
+		if !ok {
+			continue
+		}
+		return c.unit.Prefix(factor), true
+	}
+	return nil, false
+}
+
+func siPrefixFactorFromSymbol(sym string) (SIPrefix, bool) {
+	switch sym {
+	case "u", "µ": // ASCII u and U+00B5 micro sign
+		return Micro, true
+	}
+	for _, p := range siUnitPrefixes {
+		if p.Symbol == sym {
+			return p.Factor, true
+		}
+	}
+	return 0, false
 }

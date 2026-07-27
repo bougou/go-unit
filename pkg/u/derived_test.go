@@ -21,7 +21,7 @@ func TestRegisterDerivedUnitForce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if def.Symbol(WithExpSign(ExpSignSup)) != "kg·m·s⁻²" {
-		t.Fatalf("sign = %q, want kg·m·s⁻²", def.Symbol(WithExpSign(ExpSignSup)))
+	if def.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)) != "kg·m·s⁻²" {
+		t.Fatalf("sign = %q, want kg·m·s⁻²", def.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)))
 	}
 }

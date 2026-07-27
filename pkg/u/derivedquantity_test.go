@@ -6,7 +6,7 @@ import (
 )
 
 func TestUnitsProportional(t *testing.T) {
-	if !unitsProportional(Unit(Kilometer), Unit(Meter)) {
+	if !unitsProportional(Unit(Meter.Prefix(Kilo)), Unit(Meter)) {
 		t.Fatal("km and m should be proportional")
 	}
 	if unitsProportional(Unit(Celsius), Unit(Kelvin)) {
@@ -18,7 +18,7 @@ func TestUnitsProportional(t *testing.T) {
 }
 
 func TestDerivedQuantityBy(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Kilometer), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
 	siUnit := speedUnit.SI()
@@ -53,7 +53,7 @@ func TestDerivedQuantityByAffineTemperature(t *testing.T) {
 }
 
 func TestDerivedQuantityByLength(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Kilometer), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
 	got := speed.ByLength(Meter)
@@ -69,7 +69,7 @@ func TestDerivedQuantityByLength(t *testing.T) {
 }
 
 func TestDerivedQuantityByTime(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Kilometer), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
 	got := speed.ByTime(Second)
@@ -83,7 +83,7 @@ func TestDerivedQuantityByTime(t *testing.T) {
 }
 
 func TestDerivedQuantityByNoOpChaining(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Kilometer), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
 	affineUnit := NewDerivedUnit().

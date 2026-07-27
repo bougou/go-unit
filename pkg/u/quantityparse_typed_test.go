@@ -11,7 +11,7 @@ func TestLengthQuantityParse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.Value != 10 || got.Unit != Unit(Kilometer) {
+	if got.Value != 10 || got.Unit != Unit(Meter.Prefix(Kilo)) {
 		t.Fatalf("got %+v, want 10 km", got)
 	}
 
@@ -59,8 +59,8 @@ func TestDerivedQuantityParse(t *testing.T) {
 		value float64
 		unit  *DerivedUnit
 	}{
-		{"5 N", 5, ForceUnit},
-		{"60 m/s", 60, SpeedUnit},
+		{"5 N", 5, Newton},
+		{"60 m/s", 60, Speed},
 	}
 
 	for _, tt := range tests {
@@ -87,7 +87,7 @@ func TestTypedQuantityMustParse(t *testing.T) {
 	if got := LengthQuantityMustParse("10 m"); got.Value != 10 || got.Unit != Unit(Meter) {
 		t.Fatalf("LengthQuantityMustParse = %+v, want 10 m", got)
 	}
-	if got := DerivedQuantityMustParse("5 N"); got.Value != 5 || got.Unit != ForceUnit {
+	if got := DerivedQuantityMustParse("5 N"); got.Value != 5 || got.Unit != Newton {
 		t.Fatalf("DerivedQuantityMustParse = %+v, want 5 N", got)
 	}
 }

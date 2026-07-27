@@ -32,13 +32,13 @@ func WithPrefix(prefix Symbol) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.prefix = prefix }
 }
 
-// WithSpace inserts a space between the number and prefix in PrefixFormat output.
-func WithSpace(space bool) prefixFormatOptionFn {
+// WithPrefixSpace inserts a space between the number and prefix in PrefixFormat output.
+func WithPrefixSpace(space bool) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.space = space }
 }
 
-// WithPrecision sets decimal places in the formatted number. Zero uses RoundMethod.
-func WithPrecision(precision int) prefixFormatOptionFn {
+// WithPrefixPrecision sets decimal places in PrefixFormat. Zero uses RoundMethod.
+func WithPrefixPrecision(precision int) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.precision = precision }
 }
 

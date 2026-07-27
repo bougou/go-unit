@@ -3,52 +3,34 @@ package u
 import "testing"
 
 func TestNamedUnitsSameCompositionDistinct(t *testing.T) {
-	if HertzUnit == BecquerelUnit {
+	if Hertz == Becquerel {
 		t.Fatal("Hz and Bq should be distinct canonical instances")
 	}
-	if GrayUnit == SievertUnit {
+	if Gray == Sievert {
 		t.Fatal("Gy and Sv should be distinct canonical instances")
 	}
-	if HertzUnit.Key() != "second^-1#Hz" || BecquerelUnit.Key() != "second^-1#Bq" {
-		t.Fatalf("Hz key %q Bq key %q", HertzUnit.Key(), BecquerelUnit.Key())
+	if Hertz.Key() != "second^-1#Hz" || Becquerel.Key() != "second^-1#Bq" {
+		t.Fatalf("Hz key %q Bq key %q", Hertz.Key(), Becquerel.Key())
 	}
-	if GrayUnit.Key() != "meter^2*second^-2#Gy" || SievertUnit.Key() != "meter^2*second^-2#Sv" {
-		t.Fatalf("Gy key %q Sv key %q", GrayUnit.Key(), SievertUnit.Key())
+	if Gray.Key() != "meter^2*second^-2#Gy" || Sievert.Key() != "meter^2*second^-2#Sv" {
+		t.Fatalf("Gy key %q Sv key %q", Gray.Key(), Sievert.Key())
 	}
 }
 
 func TestNamedUnitsSameCompositionSameDimension(t *testing.T) {
-	if !HertzUnit.Dim().Equal(BecquerelUnit.Dim()) || !HertzUnit.Dim().Equal(DimFrequency) {
-		t.Fatalf("Hz dim %+v Bq dim %+v", HertzUnit.Dim(), BecquerelUnit.Dim())
+	if !Hertz.Dim().Equal(Becquerel.Dim()) || !Hertz.Dim().Equal(DimFrequency) {
+		t.Fatalf("Hz dim %+v Bq dim %+v", Hertz.Dim(), Becquerel.Dim())
 	}
-	if !GrayUnit.Dim().Equal(SievertUnit.Dim()) || !GrayUnit.Dim().Equal(DimAbsorbedDose) {
-		t.Fatalf("Gy dim %+v Sv dim %+v", GrayUnit.Dim(), SievertUnit.Dim())
+	if !Gray.Dim().Equal(Sievert.Dim()) || !Gray.Dim().Equal(DimAbsorbedDose) {
+		t.Fatalf("Gy dim %+v Sv dim %+v", Gray.Dim(), Sievert.Dim())
 	}
 }
 
 func TestNamedUnitsSameCompositionConvertible(t *testing.T) {
-	fiftyHz := NewDerivedQuantity(50, HertzUnit)
-	asBq := fiftyHz.By(BecquerelUnit)
-	if asBq.Value != 50 || asBq.Unit != BecquerelUnit {
-		t.Fatalf("By(BecquerelUnit) = %+v, want 50 Bq", asBq)
-	}
-}
-
-func TestNamedUnitAliasesUnnamedIntern(t *testing.T) {
-	unnamed, err := NewDerivedUnit().Mass(Kilogram, 1).Length(Meter, 1).Time(Second, -2).Intern()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if unnamed != ForceUnit {
-		t.Fatal("unnamed force intern should alias to ForceUnit registered with N")
-	}
-
-	generic, err := NewDerivedUnit().Time(Second, -1).Intern()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if generic != HertzUnit {
-		t.Fatal("unnamed s^-1 intern should alias to first named registrant HertzUnit")
+	fiftyHz := NewDerivedQuantity(50, Hertz)
+	asBq := fiftyHz.By(Becquerel)
+	if asBq.Value != 50 || asBq.Unit != Becquerel {
+		t.Fatalf("By(Becquerel) = %+v, want 50 Bq", asBq)
 	}
 }
 

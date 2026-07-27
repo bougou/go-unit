@@ -26,7 +26,7 @@ func TestDerivedUnitEmpty(t *testing.T) {
 }
 
 func TestDerivedUnitSymbol(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Kilometer), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
 	forceUnit := NewDerivedUnit().Mass(MassUnit(Kilogram), 1).
 		Length(LengthUnit(Meter), 1).
 		Time(TimeUnit(Second), -2)
@@ -34,7 +34,7 @@ func TestDerivedUnitSymbol(t *testing.T) {
 	tests := []struct {
 		name    string
 		unit    *DerivedUnit
-		options []SymbolOption
+		options []FormatOption
 		want    string
 	}{
 		{
@@ -45,7 +45,7 @@ func TestDerivedUnitSymbol(t *testing.T) {
 		{
 			name: "slash division",
 			unit: speedUnit,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithDivSign(DivSignSlash),
 			},
 			want: "km/h",
@@ -53,7 +53,7 @@ func TestDerivedUnitSymbol(t *testing.T) {
 		{
 			name: "superscript",
 			unit: speedUnit,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithExpSign(ExpSignSup),
 			},
 			want: "km·h⁻¹",
@@ -61,7 +61,7 @@ func TestDerivedUnitSymbol(t *testing.T) {
 		{
 			name: "star multiply",
 			unit: speedUnit,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithMulSign(MulSignStar),
 			},
 			want: "km*h^-1",
@@ -69,7 +69,7 @@ func TestDerivedUnitSymbol(t *testing.T) {
 		{
 			name: "force slash",
 			unit: forceUnit,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithDivSign(DivSignSlash),
 			},
 			want: "kg·m/s^2",
@@ -87,7 +87,7 @@ func TestDerivedUnitSymbol(t *testing.T) {
 }
 
 func TestDerivedUnitAreaPerTime(t *testing.T) {
-	u := NewDerivedUnit().Length(LengthUnit(Centimeter), 2).Time(TimeUnit(Hour), -1)
+	u := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Centi)), 2).Time(TimeUnit(Hour), -1)
 
 	sign := u.Symbol(WithExpSign(ExpSignSup))
 	if sign != "cm²·h⁻¹" {
@@ -100,8 +100,8 @@ func TestDerivedUnitAreaPerTime(t *testing.T) {
 	}
 }
 
-func TestNewDerivedQuantity(t *testing.T) {
-	unit := NewDerivedUnit().Length(LengthUnit(Centimeter), 2).Time(TimeUnit(Hour), -1)
+func TestDerived(t *testing.T) {
+	unit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Centi)), 2).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(25, unit)
 
 	if speed.Value != 25 {
@@ -112,7 +112,22 @@ func TestNewDerivedQuantity(t *testing.T) {
 	}
 }
 
-func TestDerivedQuantityForceUnit(t *testing.T) {
+func TestDerivedUnitOf(t *testing.T) {
+	unit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speed := unit.Of(60)
+
+	if speed.Value != 60 {
+		t.Fatalf("value = %v, want 60", speed.Value)
+	}
+	if speed.Unit != unit {
+		t.Fatalf("unit pointer mismatch")
+	}
+	if speed.String() != "60 km·h⁻¹" {
+		t.Fatalf("String() = %q, want 60 km·h⁻¹", speed.String())
+	}
+}
+
+func TestDerivedQuantityForce(t *testing.T) {
 	u := NewDerivedUnit().Mass(MassUnit(Kilogram), 1).
 		Length(LengthUnit(Meter), 1).
 		Time(TimeUnit(Second), -2)
@@ -123,35 +138,35 @@ func TestDerivedQuantityForceUnit(t *testing.T) {
 }
 
 func TestDerivedUnitSpecialSymbol(t *testing.T) {
-	force := ForceUnit
+	force := Newton
 
 	if force.SpecialSymbol() != "N" {
 		t.Fatalf("SpecialSymbol() = %q, want N", force.SpecialSymbol())
 	}
-	if force.Symbol() != "kg·m·s^-2" {
-		t.Fatalf("Symbol() = %q, want kg·m·s^-2", force.Symbol())
+	if force.Symbol() != "N" {
+		t.Fatalf("Symbol() = %q, want N", force.Symbol())
 	}
-	if force.Symbol(WithExpSign(ExpSignSup)) != "kg·m·s⁻²" {
-		t.Fatalf("compound Symbol() = %q, want kg·m·s⁻²", force.Symbol(WithExpSign(ExpSignSup)))
+	if force.Symbol(WithCompoundSymbol(true)) != "kg·m·s^-2" {
+		t.Fatalf("compound Symbol() = %q, want kg·m·s^-2", force.Symbol(WithCompoundSymbol(true)))
 	}
-	if force.Symbol(WithNamedSymbol(true)) != "N" {
-		t.Fatalf("WithNamedSymbol(true) = %q, want N", force.Symbol(WithNamedSymbol(true)))
+	if force.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)) != "kg·m·s⁻²" {
+		t.Fatalf("compound Symbol(sup) = %q, want kg·m·s⁻²", force.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)))
 	}
 
 	q := NewDerivedQuantity(10, force)
-	if q.String() != "10 kg·m·s⁻²" {
-		t.Fatalf("String() = %q, want 10 kg·m·s⁻²", q.String())
+	if q.String() != "10 N" {
+		t.Fatalf("String() = %q, want 10 N", q.String())
 	}
-	if Unit(force.Key()).Symbol() != "kg·m·s^-2" {
-		t.Fatalf("Unit.Symbol() = %q, want kg·m·s^-2", Unit(force.Key()).Symbol())
+	if Unit(force.Key()).Symbol() != "N" {
+		t.Fatalf("Unit.Symbol() = %q, want N", Unit(force.Key()).Symbol())
 	}
-	if Unit(force.Key()).Symbol(WithNamedSymbol(true)) != "N" {
-		t.Fatalf("Unit.Symbol(WithNamedSymbol(true)) = %q, want N", Unit(force.Key()).Symbol(WithNamedSymbol(true)))
+	if Unit(force.Key()).Symbol(WithCompoundSymbol(true)) != "kg·m·s^-2" {
+		t.Fatalf("Unit.Symbol(compound) = %q, want kg·m·s^-2", Unit(force.Key()).Symbol(WithCompoundSymbol(true)))
 	}
 }
 
 func TestDerivedQuantitySI(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Kilometer), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(50, speedUnit)
 
 	si := speed.SI()
@@ -180,7 +195,10 @@ func TestDerivedUnitIntern(t *testing.T) {
 	if canonical != again {
 		t.Fatal("Intern should return the same canonical instance")
 	}
-	if canonical.Symbol(WithExpSign(ExpSignSup)) != "kg·m·s⁻²" {
-		t.Fatalf("sign = %q, want kg·m·s⁻²", canonical.Symbol(WithExpSign(ExpSignSup)))
+	if canonical.Symbol() != "N" {
+		t.Fatalf("Symbol() = %q, want N", canonical.Symbol())
+	}
+	if canonical.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)) != "kg·m·s⁻²" {
+		t.Fatalf("compound sign = %q, want kg·m·s⁻²", canonical.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)))
 	}
 }

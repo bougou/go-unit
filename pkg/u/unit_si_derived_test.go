@@ -8,7 +8,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 	tests := []struct {
 		name    string
 		dim     DerivedDimension
-		options []SymbolOption
+		options []FormatOption
 		want    string
 	}{
 		{
@@ -19,7 +19,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 		{
 			name: "speed superscript",
 			dim:  DimSpeed,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithExpSign(ExpSignSup),
 			},
 			want: "L·T⁻¹",
@@ -27,7 +27,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 		{
 			name: "speed slash",
 			dim:  DimSpeed,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithDivSign(DivSignSlash),
 			},
 			want: "L/T",
@@ -40,7 +40,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 		{
 			name: "force slash",
 			dim:  DerivedDimension{M: 1, L: 1, T: -2},
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithDivSign(DivSignSlash),
 			},
 			want: "M·L/T^2",
@@ -48,7 +48,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 		{
 			name: "speed tml order",
 			dim:  DimSpeed,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithDimOrder(DimOrderTML),
 			},
 			want: "T^-1·L",
@@ -56,7 +56,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 		{
 			name: "force tml order",
 			dim:  DerivedDimension{M: 1, L: 1, T: -2},
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithDimOrder(DimOrderTML),
 			},
 			want: "T^-2·L·M",
@@ -64,7 +64,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 		{
 			name: "force tml slash",
 			dim:  DerivedDimension{M: 1, L: 1, T: -2},
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithDimOrder(DimOrderTML),
 				WithDivSign(DivSignSlash),
 			},
@@ -73,7 +73,7 @@ func TestDerivedDimensionSymbol(t *testing.T) {
 		{
 			name: "speed no separator",
 			dim:  DimSpeed,
-			options: []SymbolOption{
+			options: []FormatOption{
 				WithMulSign(MulSignNone),
 			},
 			want: "LT^-1",

@@ -6,7 +6,7 @@ package u
 // The first registrant for a composition also claims the bare composition key so
 // unnamed Intern calls can share that canonical instance.
 //
-// RadianUnit and SteradianUnit are registered in unit_si_derived.go.
+// Radian and Steradian are registered in unit_si_derived.go.
 
 // NoneUnit is the generic unnamed dimensionless unit, e.g. from same-dimension division.
 // Compare with == after Intern; e.g. Mass(10, Kilogram).Div(Mass(2, Kilogram)).Unit == NoneUnit.

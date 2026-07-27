@@ -59,7 +59,7 @@ func factorToBaseFromTerms(terms []unitTerm) float64 {
 //
 // Example:
 //
-//	speed := NewDerivedUnit().Length(Kilometer, 1).Time(Hour, -1)
+//	speed := NewDerivedUnit().Length(Meter.Prefix(Kilo), 1).Time(Hour, -1)
 //	speed.Symbol(WithExpSign(ExpSignSup)) // "km·h⁻¹"
 type DerivedUnit struct {
 	l unitTerm // length (L)
@@ -72,7 +72,17 @@ type DerivedUnit struct {
 
 	// specialSymbol is the SI special name (专用名称) when this compound unit has one,
 	// e.g. "N" (牛顿) for kg·m·s⁻². Empty means only the compound form is used.
+	// When prefixScale ≠ 1, display is prefix + specialSymbol (e.g. "M"+"Ω" → "MΩ").
 	specialSymbol string
+
+	// unitScale is a non-SI multiplier relative to the coherent base composition of
+	// the active terms (e.g. 3600 for watt-hour vs joule). Zero means unset (= 1).
+	// Distinct from prefixScale, which is only SI decimal prefixes on the special name.
+	unitScale float64
+
+	// prefixScale is the SI decimal multiplier relative to the coherent named unit
+	// (scale 1). Zero means unset and is treated as 1. Example: Megaohm uses 1e6.
+	prefixScale float64
 }
 
 // NewDerivedUnit starts an empty derived unit for chained construction.
@@ -80,7 +90,7 @@ type DerivedUnit struct {
 //
 // Example:
 //
-//	speedUnit := NewDerivedUnit().Length(Kilometer, 1).Time(Hour, -1)
+//	speedUnit := NewDerivedUnit().Length(Meter.Prefix(Kilo), 1).Time(Hour, -1)
 func NewDerivedUnit() *DerivedUnit {
 	return &DerivedUnit{}
 }
@@ -136,12 +146,100 @@ func (u *DerivedUnit) Named(specialSymbol string) *DerivedUnit {
 	return u
 }
 
-// SpecialSymbol returns the SI special name, if any.
+// Scale sets a non-SI multiplier relative to the coherent composition of the terms.
+// Used for convenience units such as watt-hour (1 W·h = 3600 J). Zero/omitted means 1.
+// Prefer SI Prefix for decimal scaling of named units (kW·h = WattHour.Prefix(Kilo)).
+//
+// Example: NewDerivedUnit().… .Named("W·h").Scale(3600)
+func (u *DerivedUnit) Scale(factor float64) *DerivedUnit {
+	if u == nil {
+		return nil
+	}
+	if factor <= 0 {
+		panic(fmt.Sprintf("unit scale must be positive, got %g", factor))
+	}
+	if factor == 1 {
+		u.unitScale = 0
+		return u
+	}
+	u.unitScale = factor
+	return u
+}
+
+// SpecialSymbol returns the SI special name, if any (without SI prefix).
 func (u *DerivedUnit) SpecialSymbol() string {
 	if u == nil {
 		return ""
 	}
 	return u.specialSymbol
+}
+
+// PrefixScale returns the SI prefix factor relative to the coherent named unit.
+// Returns 1 when no prefix is applied.
+func (u *DerivedUnit) PrefixScale() float64 {
+	return u.effectivePrefixScale()
+}
+
+func (u *DerivedUnit) effectivePrefixScale() float64 {
+	if u == nil || u.prefixScale == 0 {
+		return 1
+	}
+	return u.prefixScale
+}
+
+func (u *DerivedUnit) effectiveUnitScale() float64 {
+	if u == nil || u.unitScale == 0 {
+		return 1
+	}
+	return u.unitScale
+}
+
+// displaySpecialSymbol returns the named symbol including any SI prefix (e.g. "MΩ").
+func (u *DerivedUnit) displaySpecialSymbol() string {
+	if u == nil || u.specialSymbol == "" {
+		return ""
+	}
+	prefix, ok := siPrefixDisplaySymbol(SIPrefix(u.effectivePrefixScale()))
+	if !ok {
+		return u.specialSymbol
+	}
+	return prefix + u.specialSymbol
+}
+
+// Prefix returns a named derived unit scaled by an SI decimal prefix factor.
+// The receiver must already have a special name (e.g. Ohm). Results are interned.
+//
+// Example:
+//
+//	Ohm.Prefix(Mega)   // MΩ, FactorToBase = 1e6
+//	Ohm.Prefix(Micro)  // μΩ
+//	Ohm.Prefix(Mega).Prefix(Micro) // Ω again (factors cancel)
+func (u *DerivedUnit) Prefix(factor SIPrefix) *DerivedUnit {
+	if u == nil {
+		panic("Prefix on nil DerivedUnit")
+	}
+	if u.specialSymbol == "" {
+		panic("Prefix requires a named derived unit (call Named first)")
+	}
+	if factor <= 0 {
+		panic(fmt.Sprintf("SI prefix factor must be positive, got %g", factor))
+	}
+	mustSIPrefixByFactor(factor)
+
+	scale := SIPrefix(u.effectivePrefixScale() * float64(factor))
+	mustSIPrefixByFactor(scale)
+
+	if scale == 1 {
+		coherent := u.clone()
+		coherent.prefixScale = 0
+		coherent.specialSymbol = u.specialSymbol
+		return coherent.MustIntern()
+	}
+
+	scaled := u.clone()
+	scaled.specialSymbol = u.specialSymbol
+	scaled.prefixScale = float64(scale)
+	return scaled.MustIntern()
 }
 
 func (u *DerivedUnit) withUnit(dim Dimension, unit Unit, exp int8) *DerivedUnit {
@@ -253,16 +351,17 @@ func (u *DerivedUnit) registryKey() Unit {
 		return ""
 	}
 
+	display := u.displaySpecialSymbol()
 	if len(u.terms()) == 0 {
-		if u.specialSymbol != "" {
-			return Unit("#" + u.specialSymbol)
+		if display != "" {
+			return Unit("#" + display)
 		}
 		return ""
 	}
 
 	base := u.compositionKey()
-	if u.specialSymbol != "" {
-		return Unit(string(base) + "#" + u.specialSymbol)
+	if display != "" {
+		return Unit(string(base) + "#" + display)
 	}
 	return base
 }
@@ -272,7 +371,7 @@ func (u *DerivedUnit) FactorToBase() float64 {
 	if u == nil {
 		return 1
 	}
-	return factorToBaseFromTerms(u.terms())
+	return factorToBaseFromTerms(u.terms()) * u.effectiveUnitScale() * u.effectivePrefixScale()
 }
 
 // SI returns an equivalent unit expressed with SI base units for each dimension.
@@ -295,7 +394,7 @@ func (u *DerivedUnit) SI() *DerivedUnit {
 //
 //	a, _ := NewDerivedUnit().Mass(Kilogram, 1).Length(Meter, 1).Time(Second, -2).Named("N").Intern()
 //	b, _ := NewDerivedUnit().Mass(Kilogram, 1).Length(Meter, 1).Time(Second, -2).Intern()
-//	a == b // true when ForceUnit was registered first in init
+//	a == b // true when Newton was registered first in init
 func (u *DerivedUnit) Intern() (*DerivedUnit, error) {
 	if u == nil {
 		return nil, fmt.Errorf("nil derived unit")
@@ -315,8 +414,11 @@ func (u *DerivedUnit) Intern() (*DerivedUnit, error) {
 	derivedRegistry[key] = canonical
 	if u.specialSymbol == "" {
 		derivedRegistry[compKey] = canonical
-	} else if _, ok := derivedRegistry[compKey]; !ok {
-		derivedRegistry[compKey] = canonical
+	} else if u.effectivePrefixScale() == 1 {
+		// Only coherent (unprefixed) named units alias the composition key.
+		if _, ok := derivedRegistry[compKey]; !ok {
+			derivedRegistry[compKey] = canonical
+		}
 	}
 	registerDerivedUnitAliases(canonical, key)
 	return canonical, nil
@@ -335,15 +437,15 @@ func registerDerivedUnitAliases(u *DerivedUnit, key Unit) {
 		registerUnitSymbol(sym, key)
 	}
 
-	for _, opts := range [][]SymbolOption{
-		nil,
-		{WithExpSign(ExpSignSup)},
-		{WithDivSign(DivSignSlash)},
-		{WithMulSign(MulSignStar)},
-		{WithMulSign(MulSignSpace)},
-		{WithNamedSymbol(true)},
-		{WithDivSign(DivSignSlash), WithExpSign(ExpSignSup)},
-		{WithMulSign(MulSignStar), WithExpSign(ExpSignSup)},
+	for _, opts := range [][]FormatOption{
+		nil, // special name when set (e.g. "N", "kW·h")
+		{WithCompoundSymbol(true)},
+		{WithCompoundSymbol(true), WithExpSign(ExpSignSup)},
+		{WithCompoundSymbol(true), WithDivSign(DivSignSlash)},
+		{WithCompoundSymbol(true), WithMulSign(MulSignStar)},
+		{WithCompoundSymbol(true), WithMulSign(MulSignSpace)},
+		{WithCompoundSymbol(true), WithDivSign(DivSignSlash), WithExpSign(ExpSignSup)},
+		{WithCompoundSymbol(true), WithMulSign(MulSignStar), WithExpSign(ExpSignSup)},
 	} {
 		register(u.Symbol(opts...))
 	}
@@ -357,6 +459,13 @@ func (u *DerivedUnit) MustIntern() *DerivedUnit {
 	return interned
 }
 
+// Of creates a derived quantity with value in u.
+//
+// Example: Newton.Of(100) // 100 N
+func (u *DerivedUnit) Of(value float64) DerivedQuantity {
+	return NewDerivedQuantity(value, u)
+}
+
 func (u *DerivedUnit) clone() *DerivedUnit {
 	return &DerivedUnit{
 		l:             u.l,
@@ -367,6 +476,8 @@ func (u *DerivedUnit) clone() *DerivedUnit {
 		n:             u.n,
 		j:             u.j,
 		specialSymbol: u.specialSymbol,
+		unitScale:     u.unitScale,
+		prefixScale:   u.prefixScale,
 	}
 }
 
@@ -589,6 +700,32 @@ func derivedUnitsConvertible(source, target *DerivedUnit) bool {
 	return true
 }
 
+// derivedUnitsOverlapProportional reports whether every base dimension that is
+// active in both units uses proportionally related units (constant ratio via the
+// dimension base). Affine pairs such as °C/K fail. Dimensions present in only
+// one operand are ignored — they do not need to agree for Mul/Div.
+func derivedUnitsOverlapProportional(a, b *DerivedUnit) bool {
+	if a == nil || b == nil {
+		return false
+	}
+	for _, dim := range [...]Dimension{
+		DimMass, DimLength, DimTime, DimCurrent, DimTemperature, DimAmount, DimLuminous,
+	} {
+		aTerm := a.term(dim)
+		bTerm := b.term(dim)
+		if !aTerm.Active() || !bTerm.Active() {
+			continue
+		}
+		if aTerm.unit == bTerm.unit {
+			continue
+		}
+		if !unitsProportional(aTerm.unit, bTerm.unit) {
+			return false
+		}
+	}
+	return true
+}
+
 func derivedUnitConversionFactor(source, target *DerivedUnit) float64 {
 	factor := 1.0
 	for _, dim := range [...]Dimension{
@@ -610,7 +747,9 @@ func derivedUnitConversionFactor(source, target *DerivedUnit) float64 {
 		ratio := sourceDef.Scale / targetDef.Scale
 		factor *= math.Pow(ratio, float64(sourceTerm.exp))
 	}
-	return factor
+	return factor *
+		source.effectiveUnitScale() * source.effectivePrefixScale() /
+		(target.effectiveUnitScale() * target.effectivePrefixScale())
 }
 
 func mustDerivedDim(u *DerivedUnit) DerivedDimension {
@@ -651,35 +790,62 @@ const (
 	DimOrderMLT DimOrder = "mlt" // M, L, T, I, H, N, J (textbook convention)
 )
 
-type symbolOption struct {
+// PrecisionAuto selects compact %g-style numeric formatting (Format default).
+const PrecisionAuto = -1
+
+// formatOption holds display settings for Symbol and Format.
+type formatOption struct {
+	// Value formatting (Quantity / DerivedQuantity Format).
+	delimiter NumberDelimiter
+	precision int // PrecisionAuto means %g
+
+	// Symbol formatting (Unit / DerivedUnit / DerivedDimension Symbol).
 	mulSign  MulSign
 	divSign  DivSign
 	expSign  ExpSign
-	dimOrder DimOrder
-	useNamed bool
+	dimOrder    DimOrder
+	useCompound bool // false (zero value): prefer SI special name when set
 }
 
-var defaultSymbolOption = symbolOption{
-	mulSign:  MulSignDot,
-	divSign:  DivSignNegative,
-	expSign:  ExpSignCarat,
-	dimOrder: DimOrderMLT,
-	useNamed: false,
+var defaultFormatOption = formatOption{
+	delimiter: NumberDelimiterNone,
+	precision: PrecisionAuto,
+	mulSign:   MulSignDot,
+	divSign:   DivSignNegative,
+	expSign:   ExpSignCarat,
+	dimOrder:  DimOrderMLT,
+	// useCompound stays false: Format/Symbol default to the special name (e.g. "N").
 }
 
-// SymbolOption configures Symbol output for DerivedUnit and DerivedDimension.
-type SymbolOption func(option *symbolOption)
+// FormatOption configures Symbol and Format output (value + unit symbol).
+type FormatOption func(option *formatOption)
+
+// WithNumberDelimiter sets the thousands separator for the numeric value in Format.
+// Prefer NumberDelimiterNone, NumberDelimiterComma, or NumberDelimiterUnderscore;
+// space separators are not recommended (they break QuantityParse).
+func WithNumberDelimiter(delimiter NumberDelimiter) FormatOption {
+	return func(option *formatOption) {
+		option.delimiter = delimiter
+	}
+}
+
+// WithPrecision sets fixed decimal places for Format. PrecisionAuto (default) uses %g.
+func WithPrecision(precision int) FormatOption {
+	return func(option *formatOption) {
+		option.precision = precision
+	}
+}
 
 // WithMulSign sets the multiplication separator.
-func WithMulSign(mulSign MulSign) SymbolOption {
-	return func(option *symbolOption) {
+func WithMulSign(mulSign MulSign) FormatOption {
+	return func(option *formatOption) {
 		option.mulSign = mulSign
 	}
 }
 
 // WithDivSign sets how division / negative exponents are rendered.
-func WithDivSign(divSign DivSign) SymbolOption {
-	return func(option *symbolOption) {
+func WithDivSign(divSign DivSign) FormatOption {
+	return func(option *formatOption) {
 		option.divSign = divSign
 	}
 }
@@ -687,29 +853,30 @@ func WithDivSign(divSign DivSign) SymbolOption {
 // WithExpSign sets how exponents are rendered.
 //
 // Example: unit.Symbol(WithExpSign(ExpSignSup)) // "km·h⁻¹"
-func WithExpSign(expSign ExpSign) SymbolOption {
-	return func(option *symbolOption) {
+func WithExpSign(expSign ExpSign) FormatOption {
+	return func(option *formatOption) {
 		option.expSign = expSign
 	}
 }
 
 // WithDimOrder sets the ordering of dimension letters in compound symbols.
-func WithDimOrder(dimOrder DimOrder) SymbolOption {
-	return func(option *symbolOption) {
+func WithDimOrder(dimOrder DimOrder) FormatOption {
+	return func(option *formatOption) {
 		option.dimOrder = dimOrder
 	}
 }
 
-// WithNamedSymbol controls whether Symbol returns the SI special name when one is set.
-// Default (no options) uses the compound base-unit expression. Pass true for "N" instead of "kg·m·s^-2".
-func WithNamedSymbol(useNamed bool) SymbolOption {
-	return func(option *symbolOption) {
-		option.useNamed = useNamed
+// WithCompoundSymbol requests the compound base-unit expression instead of the SI special name.
+// Default (false / omitted) prefers the special name when one is set (e.g. "N").
+// Pass true for "kg·m·s^-2" instead of "N".
+func WithCompoundSymbol(useCompound bool) FormatOption {
+	return func(option *formatOption) {
+		option.useCompound = useCompound
 	}
 }
 
-func symbolOptions(options []SymbolOption) symbolOption {
-	opt := defaultSymbolOption
+func applyFormatOptions(options ...FormatOption) formatOption {
+	opt := defaultFormatOption
 	for _, fn := range options {
 		fn(&opt)
 	}
@@ -718,27 +885,42 @@ func symbolOptions(options []SymbolOption) symbolOption {
 
 // Symbol returns the display symbol for u.
 //
-// By default returns the compound base-unit expression (useNamed is false).
-// Pass WithNamedSymbol(true) for the SI special name when set (e.g. "N").
+// By default returns the SI special name when one is set (e.g. "N").
+// Pass WithCompoundSymbol(true) for the compound base-unit expression.
 //
 // Example:
 //
-//	ForceUnit.Symbol()                           // "kg·m·s^-2"
-//	ForceUnit.Symbol(WithNamedSymbol(true))      // "N"
-//	ForceUnit.Symbol(WithExpSign(ExpSignSup))    // "kg·m·s⁻²"
-//	ForceUnit.Symbol(WithDivSign(DivSignSlash))  // "kg·m/s^2"
-func (u *DerivedUnit) Symbol(options ...SymbolOption) string {
+//	Newton.Symbol()                                      // "N"
+//	Newton.Symbol(WithCompoundSymbol(true))              // "kg·m·s^-2"
+//	Newton.Prefix(Kilo).Symbol(WithCompoundSymbol(true)) // "k(kg·m·s^-2)"
+//	Newton.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)) // "kg·m·s⁻²"
+//	Newton.Symbol(WithCompoundSymbol(true), WithDivSign(DivSignSlash)) // "kg·m/s^2"
+func (u *DerivedUnit) Symbol(options ...FormatOption) string {
+	return u.symbolWith(applyFormatOptions(options...))
+}
+
+func (u *DerivedUnit) symbolWith(opt formatOption) string {
 	if u == nil {
 		return ""
 	}
-	opt := symbolOptions(options)
-	if opt.useNamed && u.specialSymbol != "" {
-		return u.specialSymbol
+	if !opt.useCompound && u.specialSymbol != "" {
+		return u.displaySpecialSymbol()
 	}
-	return symbolFromTerms(u.terms(), &opt)
+	compound := symbolFromTerms(u.terms(), &opt)
+	scale := u.effectivePrefixScale()
+	if scale == 1 || compound == "" {
+		return compound
+	}
+	prefix, ok := siPrefixDisplaySymbol(SIPrefix(scale))
+	if !ok {
+		return compound
+	}
+	// Keep the SI prefix outside the compound so "k" is not glued onto "kg"
+	// (e.g. kW·h → "k(kg·m^2·s^-2)", not "kg·m^2·s^-2").
+	return prefix + "(" + compound + ")"
 }
 
-func symbolFromTerms(terms []unitTerm, opt *symbolOption) string {
+func symbolFromTerms(terms []unitTerm, opt *formatOption) string {
 	sorted := sortedUnitTerms(terms)
 	mul := string(opt.mulSign)
 
@@ -789,7 +971,7 @@ func symbolFromTerms(terms []unitTerm, opt *symbolOption) string {
 	return strings.Join(parts, mul)
 }
 
-func formatTermSign(sign string, exp int8, opt *symbolOption) string {
+func formatTermSign(sign string, exp int8, opt *formatOption) string {
 	if exp == 1 {
 		return sign
 	}
@@ -823,15 +1005,31 @@ func derivedUnitFromBaseUnit(u Unit) (*DerivedUnit, bool) {
 }
 
 func mulDerivedUnits(primary, secondary *DerivedUnit) *DerivedUnit {
-	return derivedUnitFromDimensionAndPrefs(primary.Dim().Add(secondary.Dim()), primary, secondary)
+	return derivedUnitFromDimensionAndPrefs(primary.Dim().Mul(secondary.Dim()), primary, secondary)
 }
 
 func divDerivedUnits(primary, secondary *DerivedUnit) *DerivedUnit {
-	dim := primary.Dim().Sub(secondary.Dim())
+	dim := primary.Dim().Div(secondary.Dim())
 	if dim.Equal(DerivedDimension{}) {
 		return NoneUnit
 	}
 	return derivedUnitFromDimensionAndPrefs(dim, primary, secondary)
+}
+
+// rootDerivedUnit returns the unit of the nth root of u when every base exponent
+// is divisible by n. Dimensionless roots yield NoneUnit.
+func rootDerivedUnit(u *DerivedUnit, n int) (*DerivedUnit, bool) {
+	if u == nil || n < 2 {
+		return nil, false
+	}
+	dim, ok := u.Dim().Root(n)
+	if !ok {
+		return nil, false
+	}
+	if dim.Equal(DerivedDimension{}) {
+		return NoneUnit, true
+	}
+	return derivedUnitFromDimensionAndPrefs(dim, u, nil), true
 }
 
 func derivedUnitFromDimensionAndPrefs(dim DerivedDimension, primary, secondary *DerivedUnit) *DerivedUnit {

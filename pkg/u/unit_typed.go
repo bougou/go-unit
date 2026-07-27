@@ -18,14 +18,26 @@ type LengthQuantity Quantity
 
 // Length creates a length quantity.
 //
-// Example: Length(42, Kilometer) // 42 km
+// Example: Length(42, Meter.Prefix(Kilo)) // 42 km
 func Length(value float64, unit LengthUnit) LengthQuantity {
 	return LengthQuantity{Value: value, Unit: Unit(unit)}
+}
+
+// Of creates a length quantity with value in u.
+//
+// Example: Meter.Prefix(Kilo).Of(42) // 42 km
+func (u LengthUnit) Of(value float64) LengthQuantity {
+	return Length(value, u)
 }
 
 // String formats q as "value symbol".
 func (q LengthQuantity) String() string {
 	return Quantity(q).String()
+}
+
+// Format formats q with optional value and symbol options.
+func (q LengthQuantity) Format(options ...FormatOption) string {
+	return Quantity(q).Format(options...)
 }
 
 // Base converts q to the SI base unit of length (meter).
@@ -35,9 +47,16 @@ func (q LengthQuantity) Base() LengthQuantity {
 
 // By converts q to another length unit.
 //
-// Example: Length(1000, Meter).By(Kilometer) // 1 km
+// Example: Length(1000, Meter).By(Meter.Prefix(Kilo)) // 1 km
 func (q LengthQuantity) By(u LengthUnit) LengthQuantity {
 	return LengthQuantity(Quantity(q).By(Unit(u)))
+}
+
+// Prefix converts q to LengthUnit(q.Unit).Prefix(factor).
+//
+// Example: Length(1000, Meter).Prefix(Kilo) // 1 km
+func (q LengthQuantity) Prefix(factor SIPrefix) LengthQuantity {
+	return q.By(LengthUnit(q.Unit).Prefix(factor))
 }
 
 // Compatible reports whether other has the same dimension (length).
@@ -57,14 +76,14 @@ func (q LengthQuantity) Sub(other LengthQuantity) LengthQuantity {
 
 // Mul returns the product as a derived quantity.
 //
-// Example: Length(10, Kilometer).Mul(Length(3, Meter)) // 30 km·m
+// Example: Length(10, Meter.Prefix(Kilo)).Mul(Length(3, Meter)) // 30 km·m
 func (q LengthQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
 // Div returns the quotient as a derived quantity.
 //
-// Example: Length(10, Kilometer).Div(Time(2, Hour)) // 5 km/h
+// Example: Length(10, Meter.Prefix(Kilo)).Div(Time(2, Hour)) // 5 km/h
 func (q LengthQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
 }
@@ -92,9 +111,21 @@ func Time(value float64, unit TimeUnit) TimeQuantity {
 	return TimeQuantity{Value: value, Unit: Unit(unit)}
 }
 
+// Of creates a time quantity with value in u.
+//
+// Example: Hour.Of(2) // 2 h
+func (u TimeUnit) Of(value float64) TimeQuantity {
+	return Time(value, u)
+}
+
 // String formats q as "value symbol".
 func (q TimeQuantity) String() string {
 	return Quantity(q).String()
+}
+
+// Format formats q with optional value and symbol options.
+func (q TimeQuantity) Format(options ...FormatOption) string {
+	return Quantity(q).Format(options...)
 }
 
 // Base converts q to the SI base unit of time (second).
@@ -105,6 +136,13 @@ func (q TimeQuantity) Base() TimeQuantity {
 // By converts q to another time unit.
 func (q TimeQuantity) By(u TimeUnit) TimeQuantity {
 	return TimeQuantity(Quantity(q).By(Unit(u)))
+}
+
+// Prefix converts q to TimeUnit(q.Unit).Prefix(factor).
+//
+// Example: Time(1, Second).Prefix(Milli) // 1000 ms
+func (q TimeQuantity) Prefix(factor SIPrefix) TimeQuantity {
+	return q.By(TimeUnit(q.Unit).Prefix(factor))
 }
 
 // Compatible reports whether other has the same dimension (time).
@@ -155,9 +193,21 @@ func Mass(value float64, unit MassUnit) MassQuantity {
 	return MassQuantity{Value: value, Unit: Unit(unit)}
 }
 
+// Of creates a mass quantity with value in u.
+//
+// Example: Kilogram.Of(2) // 2 kg
+func (u MassUnit) Of(value float64) MassQuantity {
+	return Mass(value, u)
+}
+
 // String formats q as "value symbol".
 func (q MassQuantity) String() string {
 	return Quantity(q).String()
+}
+
+// Format formats q with optional value and symbol options.
+func (q MassQuantity) Format(options ...FormatOption) string {
+	return Quantity(q).Format(options...)
 }
 
 // Base converts q to the SI base unit of mass (kilogram).
@@ -168,6 +218,13 @@ func (q MassQuantity) Base() MassQuantity {
 // By converts q to another mass unit.
 func (q MassQuantity) By(u MassUnit) MassQuantity {
 	return MassQuantity(Quantity(q).By(Unit(u)))
+}
+
+// Prefix converts q to MassUnit(q.Unit).Prefix(factor).
+//
+// Example: Mass(1, Kilogram).Prefix(Milli) // 1000 g
+func (q MassQuantity) Prefix(factor SIPrefix) MassQuantity {
+	return q.By(MassUnit(q.Unit).Prefix(factor))
 }
 
 // Compatible reports whether other has the same dimension (mass).
@@ -220,9 +277,21 @@ func Current(value float64, unit CurrentUnit) CurrentQuantity {
 	return CurrentQuantity{Value: value, Unit: Unit(unit)}
 }
 
+// Of creates a current quantity with value in u.
+//
+// Example: Ampere.Of(5) // 5 A
+func (u CurrentUnit) Of(value float64) CurrentQuantity {
+	return Current(value, u)
+}
+
 // String formats q as "value symbol".
 func (q CurrentQuantity) String() string {
 	return Quantity(q).String()
+}
+
+// Format formats q with optional value and symbol options.
+func (q CurrentQuantity) Format(options ...FormatOption) string {
+	return Quantity(q).Format(options...)
 }
 
 // Base converts q to the SI base unit of current (ampere).
@@ -233,6 +302,13 @@ func (q CurrentQuantity) Base() CurrentQuantity {
 // By converts q to another current unit.
 func (q CurrentQuantity) By(u CurrentUnit) CurrentQuantity {
 	return CurrentQuantity(Quantity(q).By(Unit(u)))
+}
+
+// Prefix converts q to CurrentUnit(q.Unit).Prefix(factor).
+//
+// Example: Current(1, Ampere).Prefix(Milli) // 1000 mA
+func (q CurrentQuantity) Prefix(factor SIPrefix) CurrentQuantity {
+	return q.By(CurrentUnit(q.Unit).Prefix(factor))
 }
 
 // Compatible reports whether other has the same dimension (current).
@@ -283,9 +359,21 @@ func Temperature(value float64, unit TemperatureUnit) TemperatureQuantity {
 	return TemperatureQuantity{Value: value, Unit: Unit(unit)}
 }
 
+// Of creates a temperature quantity with value in u.
+//
+// Example: Celsius.Of(25) // 25 °C
+func (u TemperatureUnit) Of(value float64) TemperatureQuantity {
+	return Temperature(value, u)
+}
+
 // String formats q as "value symbol".
 func (q TemperatureQuantity) String() string {
 	return Quantity(q).String()
+}
+
+// Format formats q with optional value and symbol options.
+func (q TemperatureQuantity) Format(options ...FormatOption) string {
+	return Quantity(q).Format(options...)
 }
 
 // Base converts q to the SI base unit of temperature (kelvin).
@@ -296,6 +384,14 @@ func (q TemperatureQuantity) Base() TemperatureQuantity {
 // By converts q to another temperature unit.
 func (q TemperatureQuantity) By(u TemperatureUnit) TemperatureQuantity {
 	return TemperatureQuantity(Quantity(q).By(Unit(u)))
+}
+
+// Prefix converts q to TemperatureUnit(q.Unit).Prefix(factor).
+// Affine units reject Prefix and therefore panic.
+//
+// Example: Temperature(1, Kelvin).Prefix(Milli) // 1000 mK
+func (q TemperatureQuantity) Prefix(factor SIPrefix) TemperatureQuantity {
+	return q.By(TemperatureUnit(q.Unit).Prefix(factor))
 }
 
 // Compatible reports whether other has the same dimension (temperature).
@@ -346,9 +442,21 @@ func Amount(value float64, unit AmountUnit) AmountQuantity {
 	return AmountQuantity{Value: value, Unit: Unit(unit)}
 }
 
+// Of creates an amount quantity with value in u.
+//
+// Example: Mole.Of(1) // 1 mol
+func (u AmountUnit) Of(value float64) AmountQuantity {
+	return Amount(value, u)
+}
+
 // String formats q as "value symbol".
 func (q AmountQuantity) String() string {
 	return Quantity(q).String()
+}
+
+// Format formats q with optional value and symbol options.
+func (q AmountQuantity) Format(options ...FormatOption) string {
+	return Quantity(q).Format(options...)
 }
 
 // Base converts q to the SI base unit of amount (mole).
@@ -359,6 +467,13 @@ func (q AmountQuantity) Base() AmountQuantity {
 // By converts q to another amount unit.
 func (q AmountQuantity) By(u AmountUnit) AmountQuantity {
 	return AmountQuantity(Quantity(q).By(Unit(u)))
+}
+
+// Prefix converts q to AmountUnit(q.Unit).Prefix(factor).
+//
+// Example: Amount(1, Mole).Prefix(Milli) // 1000 mmol
+func (q AmountQuantity) Prefix(factor SIPrefix) AmountQuantity {
+	return q.By(AmountUnit(q.Unit).Prefix(factor))
 }
 
 // Compatible reports whether other has the same dimension (amount).
@@ -409,9 +524,21 @@ func Luminous(value float64, unit LuminousUnit) LuminousQuantity {
 	return LuminousQuantity{Value: value, Unit: Unit(unit)}
 }
 
+// Of creates a luminous-intensity quantity with value in u.
+//
+// Example: Candela.Of(100) // 100 cd
+func (u LuminousUnit) Of(value float64) LuminousQuantity {
+	return Luminous(value, u)
+}
+
 // String formats q as "value symbol".
 func (q LuminousQuantity) String() string {
 	return Quantity(q).String()
+}
+
+// Format formats q with optional value and symbol options.
+func (q LuminousQuantity) Format(options ...FormatOption) string {
+	return Quantity(q).Format(options...)
 }
 
 // Base converts q to the SI base unit of luminous intensity (candela).
@@ -422,6 +549,13 @@ func (q LuminousQuantity) Base() LuminousQuantity {
 // By converts q to another luminous unit.
 func (q LuminousQuantity) By(u LuminousUnit) LuminousQuantity {
 	return LuminousQuantity(Quantity(q).By(Unit(u)))
+}
+
+// Prefix converts q to LuminousUnit(q.Unit).Prefix(factor).
+//
+// Example: Luminous(1, Candela).Prefix(Milli) // 1000 mcd
+func (q LuminousQuantity) Prefix(factor SIPrefix) LuminousQuantity {
+	return q.By(LuminousUnit(q.Unit).Prefix(factor))
 }
 
 // Compatible reports whether other has the same dimension (luminous intensity).

@@ -1,0 +1,97 @@
+---
+import '../../styles/landing.css';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>go-unit</title>
+    <meta
+      name="description"
+      content="面向 Go 的物理量库，支持 SI 感知的单位、量纲、换算与编译期量纲安全。"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="logo" href={`${base}zh/`}>go-unit</a>
+      <nav>
+        <a href={`${base}zh/concepts/`}>文档</a>
+        <a href={base}>English</a>
+        <a href="https://github.com/bougou/go-unit" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>go-unit</h1>
+        <p class="subtitle">
+          面向 Go 的物理量库，支持 SI 感知的单位、量纲、换算与编译期量纲安全。
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href={`${base}zh/concepts/dimensions/`}>开始阅读</a>
+          <a
+            class="btn btn-secondary"
+            href="https://pkg.go.dev/github.com/bougou/go-unit/pkg/u"
+          >
+            API 参考
+          </a>
+        </div>
+        <p class="info"><code>go get github.com/bougou/go-unit/pkg/u</code> · Apache License 2.0</p>
+      </section>
+
+      <section class="features">
+        <h2>特性</h2>
+        <p class="section-subtitle">
+          SI 量纲、导出单位、类型化物理量与数值词头，集中在一个轻量库中。
+        </p>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>SI 基本量纲</h3>
+            <p>七大基本量纲 — 长度、质量、时间、电流、温度、物质的量、发光强度。</p>
+          </article>
+          <article class="feature-card">
+            <h3>导出单位</h3>
+            <p>组合 km/h、N、Pa 等单位，支持 SI 专用名称与符号格式化。</p>
+          </article>
+          <article class="feature-card">
+            <h3>类型化物理量</h3>
+            <p>LengthQuantity、TimeQuantity 等，编译期量纲检查。</p>
+          </article>
+          <article class="feature-card">
+            <h3>仿射换算</h3>
+            <p>比例单位（km → m）与零点偏移单位（°C → K）。</p>
+          </article>
+          <article class="feature-card">
+            <h3>数值词头</h3>
+            <p>SI（1000）与 IEC（1024）解析/格式化，与物理单位分离。</p>
+          </article>
+          <article class="feature-card">
+            <h3>字符串解析</h3>
+            <p>QuantityParse、类型化 XxxQuantityParse 与 DerivedQuantityParse。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="quick-start">
+        <h2>快速上手</h2>
+        <p class="section-subtitle">类型化物理量在编译期保证量纲一致：</p>
+        <ul>
+          <li><code>speed := u.Length(10, u.Kilometer).Div(u.Time(2, u.Hour)) → 5 km/h</code></li>
+          <li><code>u.Length(1000, u.Meter).By(u.Kilometer) → 1 km</code></li>
+          <li><code>u.DerivedQuantity(100, u.Newton) 支持 SI 专用名称与组合符号</code></li>
+        </ul>
+        <a class="link-cta" href={`${base}zh/guides/typed-quantities/`}>
+          指南：类型化物理量、运算、词头 →
+        </a>
+      </section>
+    </main>
+
+    <footer>
+      <p>© {new Date().getFullYear()} go-unit. Built with <a href="https://starlight.astro.build/">Starlight</a>.</p>
+    </footer>
+  </body>
+</html>

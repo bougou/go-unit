@@ -24,7 +24,7 @@ func TestUnitSymbol(t *testing.T) {
 		want string
 	}{
 		{Unit(Meter), "m"},
-		{Unit(Kilometer), "km"},
+		{Unit(Meter.Prefix(Kilo)), "km"},
 		{Unit(Hour), "h"},
 		{Unit(Kelvin), "K"},
 		{Unit(Celsius), "°C"},
@@ -36,11 +36,11 @@ func TestUnitSymbol(t *testing.T) {
 		}
 	}
 
-	forceKey := Unit(ForceUnit.Key())
-	if forceKey.Symbol() != "kg·m·s^-2" {
-		t.Fatalf("Unit(force).Symbol() = %q, want kg·m·s^-2", forceKey.Symbol())
+	newtonKey := Unit(Newton.Key())
+	if newtonKey.Symbol() != "N" {
+		t.Fatalf("Unit(force).Symbol() = %q, want N", newtonKey.Symbol())
 	}
-	if forceKey.Symbol(WithNamedSymbol(true)) != "N" {
-		t.Fatalf("Unit(force).Symbol(WithNamedSymbol(true)) = %q, want N", forceKey.Symbol(WithNamedSymbol(true)))
+	if newtonKey.Symbol(WithCompoundSymbol(true)) != "kg·m·s^-2" {
+		t.Fatalf("Unit(force).Symbol(compound) = %q, want kg·m·s^-2", newtonKey.Symbol(WithCompoundSymbol(true)))
 	}
 }

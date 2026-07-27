@@ -16,7 +16,7 @@ func TestDerivedUnitParse(t *testing.T) {
 				if du.Dim() != DimSpeed {
 					t.Fatalf("dim = %+v, want speed", du.Dim())
 				}
-				if du.l.unit != Unit(Kilometer) || du.l.exp != 1 {
+				if du.l.unit != Unit(Meter.Prefix(Kilo)) || du.l.exp != 1 {
 					t.Fatalf("length term = %+v", du.l)
 				}
 				if du.t.unit != Unit(Hour) || du.t.exp != -1 {
@@ -76,7 +76,7 @@ func TestDerivedUnitParseSeparatorRules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if du.t.unit != Unit(Millisecond) || du.t.exp != 1 {
+	if du.t.unit != Unit(Second.Prefix(Milli)) || du.t.exp != 1 {
 		t.Fatalf("ms = %+v, want millisecond", du.t)
 	}
 

@@ -5,7 +5,7 @@ import "fmt"
 // Unit is the stable internal identifier for a registered or derived unit.
 // Display symbols come from UnitDef.Symbol or DerivedUnit.Symbol.
 //
-// Example: Unit(Kilometer).Symbol() // "km"
+// Example: Unit(Meter.Prefix(Kilo)).Symbol() // "km"
 type Unit string
 
 // unitDef describes a unit and how to convert it to its dimension's SI (国际单位制) base unit.
@@ -98,6 +98,7 @@ func registerUnit(def *unitDef) {
 	}
 	unitRegistry[def.Unit] = def
 	registerUnitSymbol(def.Symbol, def.Unit)
+	markSymbolIndexesDirty()
 }
 
 // validateRegistry checks that every dimension's base unit is registered.
@@ -129,19 +130,23 @@ func validateRegistry() error {
 // Symbol returns the display symbol for u.
 //
 // Registered base units return UnitDef.Symbol. Derived units delegate to
-// DerivedUnit.Symbol and honor options such as WithNamedSymbol and WithExpSign.
+// DerivedUnit.Symbol and honor options such as WithCompoundSymbol and WithExpSign.
 //
 // Example:
 //
-//	Unit(Meter).Symbol()                                 // "m"
-//	Unit(ForceUnit.Key()).Symbol()                       // "kg·m·s^-2"
-//	Unit(ForceUnit.Key()).Symbol(WithNamedSymbol(true))  // "N"
-func (u Unit) Symbol(options ...SymbolOption) string {
+//	Unit(Meter).Symbol()                                  // "m"
+//	Unit(Newton.Key()).Symbol()                            // "N"
+//	Unit(Newton.Key()).Symbol(WithCompoundSymbol(true))    // "kg·m·s^-2"
+func (u Unit) Symbol(options ...FormatOption) string {
+	return u.symbolWith(applyFormatOptions(options...))
+}
+
+func (u Unit) symbolWith(opt formatOption) string {
 	if def, ok := u.Def(); ok && def.Symbol != "" {
 		return def.Symbol
 	}
 	if du, ok := u.DerivedUnit(); ok {
-		return du.Symbol(options...)
+		return du.symbolWith(opt)
 	}
 	return string(u)
 }

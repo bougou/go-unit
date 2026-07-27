@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // NumberDelimiter selects a thousands separator for DelimitInt.
@@ -95,31 +96,41 @@ func CommaInt(n int64) string {
 //
 // Example: CommaFloat(1234.5, 1) // "1,234.5"
 func CommaFloat(val float64, precision int) string {
+	return DelimitFloat(val, precision, NumberDelimiterComma)
+}
+
+// DelimitFloat formats val with a thousands separator and fixed precision.
+//
+// Example: DelimitFloat(1234.5, 1, NumberDelimiterUnderscore) // "1_234.5"
+func DelimitFloat(val float64, precision int, delimiter NumberDelimiter) string {
 	buf := &bytes.Buffer{}
 	if val < 0 {
-		buf.Write([]byte{'-'})
-		val = 0 - val
+		buf.WriteByte('-')
+		val = -val
 	}
-
-	comma := []byte{','}
 
 	parts := strings.Split(strconv.FormatFloat(val, 'f', precision, 64), ".")
-	pos := 0
-	if len(parts[0])%3 != 0 {
-		pos += len(parts[0]) % 3
-		buf.WriteString(parts[0][:pos])
-		buf.Write(comma)
+	intPart := parts[0]
+	if delimiter == NumberDelimiterNone {
+		buf.WriteString(intPart)
+	} else {
+		pos := 0
+		if len(intPart)%3 != 0 {
+			pos = len(intPart) % 3
+			buf.WriteString(intPart[:pos])
+			buf.WriteRune(rune(delimiter))
+		}
+		for ; pos < len(intPart); pos += 3 {
+			buf.WriteString(intPart[pos : pos+3])
+			buf.WriteRune(rune(delimiter))
+		}
+		buf.Truncate(buf.Len() - utf8.RuneLen(rune(delimiter)))
 	}
-	for ; pos < len(parts[0]); pos += 3 {
-		buf.WriteString(parts[0][pos : pos+3])
-		buf.Write(comma)
-	}
-	buf.Truncate(buf.Len() - 1)
 
 	if len(parts) > 1 {
-		buf.Write([]byte{'.'})
+		buf.WriteByte('.')
 		buf.WriteString(parts[1])
 	}
 	return buf.String()
-
 }
+

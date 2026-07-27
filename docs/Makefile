@@ -1,15 +1,15 @@
-.PHONY: docs-serve docs-build
+.PHONY: docs-serve docs-build docs-check
 
-HUGO ?= hugo
+PNPM ?= pnpm
 
 docs-serve:
-	@echo "Open http://127.0.0.1:1313/go-unit/ (English) or http://127.0.0.1:1313/go-unit/zh/ (中文)"
-	$(HUGO) mod get
-	$(HUGO) server -D
+	@echo "Open http://127.0.0.1:4321/go-unit/ (English) or http://127.0.0.1:4321/go-unit/zh/ (中文)"
+	$(PNPM) install
+	$(PNPM) dev
 
 docs-build:
-	$(HUGO) mod get
-	$(HUGO) --minify
+	$(PNPM) install
+	$(PNPM) build
 
-docs-check:
-	@$(HUGO) version | grep -q extended || (echo "Lotus Docs requires Hugo Extended (e.g. asdf install hugo extended-0.164.0)" >&2; exit 1)
+docs-check: docs-build
+	$(PNPM) check-links

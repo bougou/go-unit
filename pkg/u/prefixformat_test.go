@@ -63,8 +63,8 @@ func Test_PrefixFormat(t *testing.T) {
 	for _, tt := range tests {
 
 		got := PrefixFormat(tt.val, tt.mode,
-			WithSpace(tt.option.space),
-			WithPrecision(tt.option.precision),
+			WithPrefixSpace(tt.option.space),
+			WithPrefixPrecision(tt.option.precision),
 			WithRoundMethod(tt.option.roundMethod),
 			WithRoundDifference(tt.option.roundDifference),
 		)

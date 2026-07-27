@@ -5,13 +5,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 var (
 	unitBySymbol    map[string]Unit
 	symbolsByLength []string
-	symbolIndexOnce sync.Once
 )
 
 func registerUnitSymbol(symbol string, unit Unit) {
@@ -25,22 +23,27 @@ func registerUnitSymbol(symbol string, unit Unit) {
 		return
 	}
 	unitBySymbol[symbol] = unit
+	markSymbolIndexesDirty()
 }
 
 func ensureSymbolIndex() {
-	symbolIndexOnce.Do(func() {
-		symbolsByLength = make([]string, 0, len(unitBySymbol))
-		for sym := range unitBySymbol {
-			symbolsByLength = append(symbolsByLength, sym)
+	symbolIndexMu.Lock()
+	defer symbolIndexMu.Unlock()
+	if !symbolIndexDirty && symbolsByLength != nil {
+		return
+	}
+	symbolsByLength = make([]string, 0, len(unitBySymbol))
+	for sym := range unitBySymbol {
+		symbolsByLength = append(symbolsByLength, sym)
+	}
+	sort.Slice(symbolsByLength, func(i, j int) bool {
+		li, lj := len(symbolsByLength[i]), len(symbolsByLength[j])
+		if li != lj {
+			return li > lj
 		}
-		sort.Slice(symbolsByLength, func(i, j int) bool {
-			li, lj := len(symbolsByLength[i]), len(symbolsByLength[j])
-			if li != lj {
-				return li > lj
-			}
-			return symbolsByLength[i] < symbolsByLength[j]
-		})
+		return symbolsByLength[i] < symbolsByLength[j]
 	})
+	symbolIndexDirty = false
 }
 
 func splitQuantityString(s string) (number, unitSymbol string, err error) {

@@ -1,7 +1,5 @@
 package u
 
-import "fmt"
-
 // derivedQuantity is implemented by Quantity, the seven SI base-dimension typed Quantity types,
 // and DerivedQuantity. It allows Mul and Div across base and derived quantities.
 type derivedQuantity interface {
@@ -84,7 +82,21 @@ type Quantity struct {
 
 // String formats q as "value symbol", e.g. "3 m".
 func (q Quantity) String() string {
-	return fmt.Sprintf("%g %s", q.Value, q.Unit.Symbol())
+	return q.Format()
+}
+
+// Format formats q with optional value and symbol options.
+//
+// Example:
+//
+//	Quantity{Value: 1234.5, Unit: Unit(Meter)}.Format(
+//		WithPrecision(1),
+//		WithNumberDelimiter(NumberDelimiterComma),
+//	) // "1,234.5 m"
+func (q Quantity) Format(options ...FormatOption) string {
+	opt := applyFormatOptions(options...)
+	value := formatQuantityValue(q.Value, opt)
+	return joinQuantityString(value, q.Unit.symbolWith(opt))
 }
 
 // QuantityMustParse parses a quantity and panics on error.
@@ -98,7 +110,7 @@ func QuantityMustParse(s string) Quantity {
 
 // Base converts q to the SI (国际单位制) base unit of its dimension.
 //
-// Example: Quantity{Value: 1, Unit: Unit(Kilometer)}.Base() // 1000 m
+// Example: Quantity{Value: 1, Unit: Unit(Meter.Prefix(Kilo))}.Base() // 1000 m
 func (q Quantity) Base() Quantity {
 	if _, ok := q.Unit.DerivedUnit(); ok {
 		return q
@@ -117,7 +129,7 @@ func (q Quantity) Base() Quantity {
 
 // By converts q to another unit within the same dimension.
 //
-// Example: Length(1000, Meter).By(Kilometer) // 1 km
+// Example: Length(1000, Meter).By(Meter.Prefix(Kilo)) // 1 km
 func (q Quantity) By(u Unit) Quantity {
 	targetDef, ok := u.Def()
 	if !ok {

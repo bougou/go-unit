@@ -1,0 +1,24 @@
+{
+  "name": "go-unit-docs",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "check-links": "node scripts/check-links.mjs",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.38.5",
+    "astro": "^6.4.8",
+    "sharp": "^0.34.5",
+    "starlight-theme-next": "^0.4.0"
+  },
+  "devDependencies": {
+    "unist-util-visit": "^5.1.0"
+  }
+}

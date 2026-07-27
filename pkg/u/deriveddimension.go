@@ -16,8 +16,11 @@ import "sort"
 //	{M: 1, L: 1, T: -2}  → force     (N = kg·m/s²)
 //	{M: 1, L: -1, T: -2} → pressure  (Pa)
 //
-// Two derived quantities can be added or subtracted only when their DerivedDimension
-// values are equal. Multiplying quantities adds exponents; dividing subtracts them.
+// Dimensional homogeneity (量纲齐次性): two quantities may be added or subtracted
+// only when their DerivedDimension values are equal. Multiplication and division
+// of quantities always yield a well-defined derived dimension (exponents add or
+// subtract); whether that result names a familiar physical quantity is a
+// separate concern of physical interpretation, not of dimensional algebra.
 //
 // Symbol mapping (same as Dimension.Symbol):
 //
@@ -39,13 +42,39 @@ type DerivedDimension struct {
 }
 
 // Equal reports whether two derived dimensions are identical.
-// Quantities can be added only when dimensions are equal.
+// Quantities can be added or subtracted only when dimensions are equal.
 func (d DerivedDimension) Equal(o DerivedDimension) bool {
 	return d == o
 }
 
-// Add combines dimensions as multiplication of quantities does.
-func (d DerivedDimension) Add(o DerivedDimension) DerivedDimension {
+// Add returns the dimension of a sum when d and o are dimensionally homogeneous.
+// On success ok is true and the result equals d (and o). If the dimensions differ,
+// Add returns d with ok false — dimensional inconsistency has no sum dimension.
+//
+// Example: DimEnergy.Add(DimEnergy) // DimEnergy, true
+// Example: DimEnergy.Add(DimForce)  // DimEnergy, false
+func (d DerivedDimension) Add(o DerivedDimension) (DerivedDimension, bool) {
+	if !d.Equal(o) {
+		return d, false
+	}
+	return d, true
+}
+
+// Sub returns the dimension of a difference when d and o are dimensionally
+// homogeneous. Same rules as Add: equal dimensions yield (d, true); otherwise
+// (d, false).
+func (d DerivedDimension) Sub(o DerivedDimension) (DerivedDimension, bool) {
+	if !d.Equal(o) {
+		return d, false
+	}
+	return d, true
+}
+
+// Mul returns the product dimension: quantity multiplication adds exponents.
+// Always defined in dimensional algebra (e.g. force × length → energy).
+//
+// Example: DimForce.Mul(DerivedDimension{L: 1}) // DimEnergy
+func (d DerivedDimension) Mul(o DerivedDimension) DerivedDimension {
 	return DerivedDimension{
 		L: d.L + o.L,
 		M: d.M + o.M,
@@ -57,8 +86,11 @@ func (d DerivedDimension) Add(o DerivedDimension) DerivedDimension {
 	}
 }
 
-// Sub combines dimensions as division of quantities does.
-func (d DerivedDimension) Sub(o DerivedDimension) DerivedDimension {
+// Div returns the quotient dimension: quantity division subtracts exponents.
+// Always defined; may yield the dimensionless DerivedDimension{}.
+//
+// Example: DimForce.Div(DerivedDimension{L: 1, T: -2}) // DimMass (≈ M)
+func (d DerivedDimension) Div(o DerivedDimension) DerivedDimension {
 	return DerivedDimension{
 		L: d.L - o.L,
 		M: d.M - o.M,
@@ -68,6 +100,30 @@ func (d DerivedDimension) Sub(o DerivedDimension) DerivedDimension {
 		N: d.N - o.N,
 		J: d.J - o.J,
 	}
+}
+
+// Root returns the nth-root dimension when every base exponent is divisible by n.
+// n must be >= 2. On failure ok is false and the original dimension is returned.
+//
+// Example: DerivedDimension{I: 2}.Root(2) // {I: 1}, true (ampere-squared → ampere)
+func (d DerivedDimension) Root(n int) (DerivedDimension, bool) {
+	if n < 2 {
+		return d, false
+	}
+	divisible := func(e int8) bool { return int(e)%n == 0 }
+	if !divisible(d.L) || !divisible(d.M) || !divisible(d.T) ||
+		!divisible(d.I) || !divisible(d.H) || !divisible(d.N) || !divisible(d.J) {
+		return d, false
+	}
+	return DerivedDimension{
+		L: int8(int(d.L) / n),
+		M: int8(int(d.M) / n),
+		T: int8(int(d.T) / n),
+		I: int8(int(d.I) / n),
+		H: int8(int(d.H) / n),
+		N: int8(int(d.N) / n),
+		J: int8(int(d.J) / n),
+	}, true
 }
 
 func (d DerivedDimension) addDimension(dim Dimension, exp int8) DerivedDimension {
@@ -93,8 +149,8 @@ func (d DerivedDimension) addDimension(dim Dimension, exp int8) DerivedDimension
 // Symbol renders the dimension as single-letter exponents, e.g. "M·L·T^-2".
 //
 // Example: d.Symbol(WithExpSign(ExpSignSup)) // "M·L·T⁻²"
-func (d DerivedDimension) Symbol(options ...SymbolOption) string {
-	opt := symbolOptions(options)
+func (d DerivedDimension) Symbol(options ...FormatOption) string {
+	opt := applyFormatOptions(options...)
 	return symbolFromDimensionExponents(dimensionExponents(d, &opt), &opt)
 }
 
@@ -103,7 +159,7 @@ type dimensionExponent struct {
 	exp       int8
 }
 
-func dimensionExponents(d DerivedDimension, opt *symbolOption) []dimensionExponent {
+func dimensionExponents(d DerivedDimension, opt *formatOption) []dimensionExponent {
 	candidates := []dimensionExponent{
 		{DimMass, d.M},
 		{DimLength, d.L},
@@ -127,7 +183,7 @@ func dimensionExponents(d DerivedDimension, opt *symbolOption) []dimensionExpone
 	return terms
 }
 
-func symbolFromDimensionExponents(terms []dimensionExponent, opt *symbolOption) string {
+func symbolFromDimensionExponents(terms []dimensionExponent, opt *formatOption) string {
 	mul := string(opt.mulSign)
 
 	if opt.divSign == DivSignSlash {

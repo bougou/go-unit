@@ -42,7 +42,7 @@ func (q Quantity) Sub(other Quantity) Quantity {
 // Mul returns the product of q and other as a derived quantity.
 // Multiplying quantities adds their derived dimensions.
 //
-// Example: Length(2, Kilometer).Mul(Length(3, Meter)) // 6 km·m → area unit km²
+// Example: Length(2, Meter.Prefix(Kilo)).Mul(Length(3, Meter)) // 6 km·m → area unit km²
 func (q Quantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
@@ -50,7 +50,7 @@ func (q Quantity) Mul(other derivedQuantity) DerivedQuantity {
 // Div returns q divided by other as a derived quantity.
 // Same-dimension division yields a dimensionless quantity (NoneUnit).
 //
-// Example: Length(10, Kilometer).Div(Time(2, Hour)) // 5 km/h
+// Example: Length(10, Meter.Prefix(Kilo)).Div(Time(2, Hour)) // 5 km/h
 func (q Quantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
 }

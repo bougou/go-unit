@@ -19,7 +19,7 @@
 //
 // Use typed constructors and quantity types for compile-time dimension safety:
 //
-//	d := Length(10, Kilometer)
+//	d := Length(10, Meter.Prefix(Kilo))
 //	t := Time(2, Hour)
 //	speed := d.Div(t) // DerivedQuantity: 5 km/h
 //
@@ -47,11 +47,26 @@
 //
 // Mul and Div on quantities call Intern indirectly; most callers never need Intern.
 //
-// # Symbol formatting
+// # Symbol and quantity formatting
 //
-// Symbol options control how units are rendered. By default DerivedUnit.Symbol
-// uses the compound base-unit form. Pass WithNamedSymbol(true) for special names
-// such as "N" instead of "kg·m·s^-2".
+// FormatOption functions configure both Symbol and Format output. By default
+// DerivedUnit.Symbol prefers the SI special name when one is set (e.g. "N").
+// Pass WithCompoundSymbol(true) for the base-unit form such as "kg·m·s^-2".
+// DerivedQuantity.String inlines superscript exponents;
+// DerivedQuantity.Format follows the same defaults as Symbol unless options
+// are passed.
+//
+// # SI prefix scaling — Unit.Prefix / DerivedUnit.Prefix
+//
+// Anchor.Prefix(prefix) applies an SI decimal factor without defining a new unit type:
+//
+//	Meter.Prefix(Kilo)   // km
+//	Ohm.Prefix(Mega)     // MΩ; FactorToBase = 1e6
+//	r.By(Ohm.Prefix(Mega))
+//
+// Mass keeps Gram (prefix root) and Kilogram (SI base): Gram.Prefix(Milli) → mg,
+// Gram.Prefix(Kilo) → Kilogram, Kilogram.Prefix(Milli) → Gram. Affine units such as
+// Celsius reject Prefix.
 //
 // # Prefix helpers
 //

@@ -1,0 +1,167 @@
+---
+import '../styles/landing.css';
+
+interface Feature {
+  title: string;
+  description: string;
+}
+
+interface LandingContent {
+  hero: {
+    title: string;
+    subtitle: string;
+    ctaPrimary: { text: string; href: string };
+    ctaSecondary: { text: string; href: string };
+    info: string;
+  };
+  features: {
+    title: string;
+    subtitle: string;
+    items: Feature[];
+  };
+  quickStart: {
+    title: string;
+    subtitle: string;
+    items: string[];
+    cta: { text: string; href: string };
+  };
+  docsLabel: string;
+  langSwitch: { label: string; href: string };
+}
+
+const base = import.meta.env.BASE_URL;
+
+const content: LandingContent = {
+  hero: {
+    title: 'go-unit',
+    subtitle:
+      'A Go library for physical quantities with SI-aware units, dimensions, conversions, and compile-time dimension safety.',
+    ctaPrimary: { text: 'Get Started', href: `${base}en/concepts/dimensions/` },
+    ctaSecondary: {
+      text: 'API Reference',
+      href: 'https://pkg.go.dev/github.com/bougou/go-unit/pkg/u',
+    },
+    info: 'Apache License 2.0 · go get github.com/bougou/go-unit/pkg/u',
+  },
+  features: {
+    title: 'Features',
+    subtitle:
+      'SI dimensions, derived units, typed quantities, and numeric prefixes in one focused library.',
+    items: [
+      {
+        title: 'SI base dimensions',
+        description:
+          'Seven base dimensions — length, mass, time, current, temperature, amount, and luminous intensity.',
+      },
+      {
+        title: 'Derived units',
+        description:
+          'Build compound units (km/h, N, Pa) with optional SI special names and symbol formatting.',
+      },
+      {
+        title: 'Typed quantities',
+        description:
+          'LengthQuantity, TimeQuantity, and more for compile-time dimension checks.',
+      },
+      {
+        title: 'Affine conversion',
+        description:
+          'Ratio units (km → m) and offset units (°C → K) within the same dimension.',
+      },
+      {
+        title: 'Numeric prefixes',
+        description:
+          'SI (1000) and IEC (1024) parse/format helpers, separate from physical units.',
+      },
+      {
+        title: 'String parsing',
+        description:
+          'QuantityParse, typed XxxQuantityParse, and DerivedQuantityParse for human-readable input.',
+      },
+    ],
+  },
+  quickStart: {
+    title: 'Quick start',
+    subtitle: 'Typed quantities keep dimensions consistent at compile time:',
+    items: [
+      'speed := u.Length(10, u.Kilometer).Div(u.Time(2, u.Hour)) → 5 km/h',
+      'u.Length(1000, u.Meter).By(u.Kilometer) → 1 km',
+      'u.DerivedQuantity(100, u.Newton) with SI special names and compound symbols',
+    ],
+    cta: {
+      text: 'Guides: typed quantities, arithmetic, prefixes →',
+      href: `${base}en/guides/typed-quantities/`,
+    },
+  },
+  docsLabel: 'Docs',
+  langSwitch: { label: '中文', href: `${base}zh/` },
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>go-unit</title>
+    <meta name="description" content={content.hero.subtitle} />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="logo" href={base}>go-unit</a>
+      <nav>
+        <a href={`${base}en/concepts/`}>{content.docsLabel}</a>
+        <a href={content.langSwitch.href}>{content.langSwitch.label}</a>
+        <a href="https://github.com/bougou/go-unit" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>{content.hero.title}</h1>
+        <p class="subtitle">{content.hero.subtitle}</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href={content.hero.ctaPrimary.href}>
+            {content.hero.ctaPrimary.text}
+          </a>
+          <a class="btn btn-secondary" href={content.hero.ctaSecondary.href}>
+            {content.hero.ctaSecondary.text}
+          </a>
+        </div>
+        <p class="info"><code>go get github.com/bougou/go-unit/pkg/u</code> · Apache License 2.0</p>
+      </section>
+
+      <section class="features">
+        <h2>{content.features.title}</h2>
+        <p class="section-subtitle">{content.features.subtitle}</p>
+        <div class="feature-grid">
+          {
+            content.features.items.map((item) => (
+              <article class="feature-card">
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="quick-start">
+        <h2>{content.quickStart.title}</h2>
+        <p class="section-subtitle">{content.quickStart.subtitle}</p>
+        <ul>
+          {
+            content.quickStart.items.map((item) => (
+              <li><code>{item}</code></li>
+            ))
+          }
+        </ul>
+        <a class="link-cta" href={content.quickStart.cta.href}>{content.quickStart.cta.text}</a>
+      </section>
+    </main>
+
+    <footer>
+      <p>© {new Date().getFullYear()} go-unit. Built with <a href="https://starlight.astro.build/">Starlight</a>.</p>
+    </footer>
+  </body>
+</html>
