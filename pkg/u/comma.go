@@ -133,4 +133,3 @@ func DelimitFloat(val float64, precision int, delimiter NumberDelimiter) string 
 	}
 	return buf.String()
 }
-

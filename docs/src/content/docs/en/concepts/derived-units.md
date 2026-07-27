@@ -49,7 +49,7 @@ Pre-registered globals in `unit_si_derived.go` include `Newton`, `Pascal`, `Hert
 
 ### Prefix() — SI prefixes on special names
 
-Named derived units support `P` to scale by an SI decimal factor. The result is an interned `*DerivedUnit`:
+Named derived units support `Prefix()` to scale by an SI decimal factor. The result is an interned `*DerivedUnit`:
 
 ```go
 u.Ohm.Prefix(u.Mega)   // MΩ
@@ -67,7 +67,9 @@ force := u.Newton
 force.Dim()           // DerivedDimension{M:1, L:1, T:-2}
 force.FactorToBase()  // multiplier to SI base composition
 force.Key()           // registry identifier
-force.SpecialSymbol() // "N"
+force.Symbol()        // "N" (named symbol by default)
+force.NamedSymbol()   // "N" (stored name only, no SI prefix)
+force.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ```
 
 ### SI()

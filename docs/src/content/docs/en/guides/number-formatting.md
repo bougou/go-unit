@@ -22,7 +22,6 @@ force := u.NewDerivedQuantity(1234.5, u.Newton)
 force.Format(
     u.WithPrecision(1),
     u.WithNumberDelimiter(u.NumberDelimiterUnderscore),
-    u.WithNamedSymbol(true),
 ) // "1_234.5 N"
 ```
 
@@ -31,7 +30,7 @@ force.Format(
 | `WithPrecision(n)` | Fixed decimal places (`PrecisionAuto` / default = `%g`) |
 | `WithNumberDelimiter(d)` | Thousands separator on the value |
 | `WithExpSign` / `WithMulSign` / `WithDivSign` / … | Unit symbol style (same as `Symbol`) |
-| `WithNamedSymbol(true)` | Prefer SI special name (`N`, `Hz`, …) |
+| `WithCompoundSymbol(true)` | Compound base-unit expression instead of SI named symbol |
 
 For quantity values prefer `NumberDelimiterNone`, `NumberDelimiterComma`, or `NumberDelimiterUnderscore`. Space separators break round-trip parsing.
 

@@ -63,8 +63,9 @@ Package globals in `unit_si_derived.go` register coherent SI derived units with 
 f := u.Newton.Of(100)
 p := u.NewDerivedQuantity(101325, u.Pascal)
 
-fmt.Println(u.Newton.Symbol(u.WithNamedSymbol(true))) // N
-fmt.Println(u.Newton.Symbol())                           // kg·m·s^-2
+fmt.Println(u.Newton.Symbol()) // N
+fmt.Println(u.Newton.NamedSymbol()) // N (no SI prefix on the unit)
+fmt.Println(u.Newton.Symbol(u.WithCompoundSymbol(true))) // kg·m·s^-2
 ```
 
 ## Degree Celsius

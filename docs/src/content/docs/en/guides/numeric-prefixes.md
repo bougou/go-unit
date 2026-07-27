@@ -85,7 +85,7 @@ num, prefix := u.PrefixFormat2(1048576, u.IEC)
 
 ## Scale constants
 
-SI decimal factors (`Kilo`, `Mega`, `Micro`, …) and IEC binary factors (`Kibi`, `Mebi`, …) are exported as `float64` constants in `prefix.go`.
+SI decimal factors (`Kilo`, `Mega`, `Micro`, …) are `SIPrefix` constants; IEC binary factors (`Kibi`, `Mebi`, …) remain `float64` in `prefix.go`. `Unit.Prefix` / `ByPrefix` accept `SIPrefix` only.
 
 For **byte** multiples with named constants (`KB`, `KiB`, …), see [Byte constants](../reference/byte-constants/).
 

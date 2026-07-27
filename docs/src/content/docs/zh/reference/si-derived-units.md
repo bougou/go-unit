@@ -38,8 +38,9 @@ sidebar:
 
 ```go
 f := u.Newton.Of(100)
-u.Newton.Symbol(u.WithNamedSymbol(true)) // "N"
-u.Newton.Symbol()                           // "kg·m·s^-2"
+u.Newton.Symbol() // "N"
+u.Newton.NamedSymbol() // "N"（不含词头）
+u.Newton.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ```
 
 ## 摄氏度

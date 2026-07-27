@@ -125,7 +125,7 @@ func (q DerivedQuantity) Prefix(factor SIPrefix) DerivedQuantity {
 	if q.Unit == nil {
 		return q
 	}
-	if q.Unit.specialSymbol != "" {
+	if q.Unit.namedSymbol != "" {
 		return q.By(q.Unit.Prefix(factor))
 	}
 	terms := q.Unit.terms()

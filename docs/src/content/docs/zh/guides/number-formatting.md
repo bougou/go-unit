@@ -22,7 +22,6 @@ force := u.NewDerivedQuantity(1234.5, u.Newton)
 force.Format(
     u.WithPrecision(1),
     u.WithNumberDelimiter(u.NumberDelimiterUnderscore),
-    u.WithNamedSymbol(true),
 ) // "1_234.5 N"
 ```
 
@@ -31,7 +30,7 @@ force.Format(
 | `WithPrecision(n)` | 固定小数位（默认 `PrecisionAuto` = `%g`） |
 | `WithNumberDelimiter(d)` | 数值千分位 |
 | `WithExpSign` 等 | 单位符号样式（与 `Symbol` 相同） |
-| `WithNamedSymbol(true)` | 优先 SI 专有名称 |
+| `WithCompoundSymbol(true)` | 使用基本单位组合，而非 SI 专用名 |
 
 量显示推荐只用 `None` / `Comma` / `Underscore`；空格分隔会破坏解析往返。
 

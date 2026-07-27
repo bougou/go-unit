@@ -11,27 +11,29 @@ Unit and dimension symbols are rendered on demand via `Symbol()` methods and `Fo
 | Type | Default output |
 |------|----------------|
 | Registered unit | Registered `Symbol` field (`"km"`, `"°C"`) |
-| Derived unit | Compound base-unit expression |
+| Derived unit | SI named symbol when set (e.g. `"N"`); otherwise compound base-unit expression |
 | Derived dimension | Single-letter exponents |
 
 ```go
-u.Unit(u.Meter.Prefix(u.Kilo)).Symbol()           // "km"
-u.Newton.Symbol()                      // "kg·m·s^-2"
-u.Newton.Symbol(u.WithNamedSymbol(true)) // "N"
+u.Unit(u.Meter.Prefix(u.Kilo)).Symbol() // "km"
+u.Newton.Symbol()                       // "N"
+u.Newton.NamedSymbol()                  // "N" (without SI prefix on the unit)
+u.Newton.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ```
 
 ## Symbol options
 
-### WithNamedSymbol
+### WithCompoundSymbol
 
-Use the SI special name when set:
+Request the compound base-unit expression instead of the SI named symbol:
 
 ```go
-u.Newton.Symbol(u.WithNamedSymbol(true)) // "N"
-u.Hertz.Symbol(u.WithNamedSymbol(true)) // "Hz"
+u.Newton.Symbol() // "N" (default)
+u.Newton.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
+u.Hertz.Symbol(u.WithCompoundSymbol(true))  // "s^-1"
 ```
 
-Default is `false` — compound form is shown.
+Default is `false` — when `Named()` was used, `Symbol()` prefers the named form.
 
 ### WithExpSign
 
@@ -81,7 +83,7 @@ speed.Symbol(u.WithDivSign(u.DivSignSlash)) // "km/h"
 ```
 
 `DerivedQuantity.String()` inlines superscript exponents; `Format()` defaults match `Symbol()` (caret).
-The same `FormatOption` functions (`WithExpSign`, `WithNamedSymbol`, …) configure both `Symbol` and `Format`.
+The same `FormatOption` functions (`WithExpSign`, `WithCompoundSymbol`, …) configure both `Symbol` and `Format`.
 
 ## Combining options
 
@@ -89,7 +91,7 @@ Options compose — later functions in the slice override earlier ones:
 
 ```go
 u.Newton.Symbol(
-    u.WithNamedSymbol(false),
+    u.WithCompoundSymbol(true),
     u.WithExpSign(u.ExpSignSup),
     u.WithDivSign(u.DivSignSlash),
 ) // "kg·m/s²"
@@ -99,9 +101,13 @@ Use the same options on quantities:
 
 ```go
 u.NewDerivedQuantity(10, u.Newton).Format(
-    u.WithNamedSymbol(true),
     u.WithPrecision(2),
 ) // "10.00 N"
+
+u.NewDerivedQuantity(10, u.Newton).Format(
+    u.WithPrecision(2),
+    u.WithCompoundSymbol(true),
+) // "10.00 kg·m·s^-2"
 ```
 
 Next: [Typed quantities guide →](../guides/typed-quantities/)

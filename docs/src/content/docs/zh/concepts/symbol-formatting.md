@@ -11,26 +11,28 @@ sidebar:
 | 类型 | 默认输出 |
 |------|----------|
 | 注册单位 | `Symbol` 字段（`"km"`、`"°C"`） |
-| 导出单位 | 基本单位组合表达式 |
+| 导出单位 | 有 SI 专用名时用专用名（如 `"N"`），否则为基本单位组合 |
 | 导出量纲 | 单字母指数 |
 
 ```go
 u.Unit(u.Meter.Prefix(u.Kilo)).Symbol()                    // "km"
-u.Newton.Symbol()                               // "kg·m·s^-2"
-u.Newton.Symbol(u.WithNamedSymbol(true))     // "N"
+u.Newton.Symbol()                               // "N"
+u.Newton.NamedSymbol()                          // "N"（不含词头）
+u.Newton.Symbol(u.WithCompoundSymbol(true))     // "kg·m·s^-2"
 ```
 
 ## 选项
 
-### WithNamedSymbol
+### WithCompoundSymbol
 
-有 SI 专用名时使用专用名：
+使用基本单位组合表达式，而不是 SI 专用名：
 
 ```go
-u.Newton.Symbol(u.WithNamedSymbol(true)) // "N"
+u.Newton.Symbol() // "N"（默认）
+u.Newton.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ```
 
-默认为 `false`，显示组合形式。
+默认为 `false`：经 `Named()` 设置的单位，`Symbol()` 优先显示专用名。
 
 ### WithExpSign
 
@@ -72,13 +74,17 @@ speed.Symbol(u.WithExpSign(u.ExpSignSup))   // "km·h⁻¹"
 speed.Symbol(u.WithDivSign(u.DivSignSlash)) // "km/h"
 ```
 
-`DerivedQuantity.String()` 内联上标指数；`Format()` 默认与 `Symbol()` 一致（caret）。同一套 `FormatOption`（`WithExpSign`、`WithNamedSymbol` 等）可同时用于 `Symbol` 与 `Format`。
+`DerivedQuantity.String()` 内联上标指数；`Format()` 默认与 `Symbol()` 一致（caret）。同一套 `FormatOption`（`WithExpSign`、`WithCompoundSymbol` 等）可同时用于 `Symbol` 与 `Format`。
 
 ```go
 u.NewDerivedQuantity(10, u.Newton).Format(
-    u.WithNamedSymbol(true),
     u.WithPrecision(2),
 ) // "10.00 N"
+
+u.NewDerivedQuantity(10, u.Newton).Format(
+    u.WithPrecision(2),
+    u.WithCompoundSymbol(true),
+) // "10.00 kg·m·s^-2"
 ```
 
 下一步：[类型化物理量指南 →](../guides/typed-quantities/)

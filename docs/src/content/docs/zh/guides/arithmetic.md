@@ -66,7 +66,7 @@ si := avg.By(u.Speed)     // ≈16.667 m/s
 
 ## 不支持
 
-- 自动简化为 SI 专用名（除非 `By(Newton)` 或 `WithNamedSymbol`）
+- 自动简化为 SI 专用名（除非 `By(Newton)`；有专用名时 `Symbol()` / `Format()` 默认显示专用名）
 - 浮点溢出/下溢处理
 - 不确定度传播
 

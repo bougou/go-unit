@@ -46,7 +46,7 @@ newton := u.NewDerivedUnit().
 
 ### Prefix() — 专用名上的 SI 词头
 
-具有专用名的导出单位可用 `P` 缩放，返回同类型的 `*DerivedUnit`（已 Intern）：
+具有专用名的导出单位可用 `Prefix()` 缩放，返回同类型的 `*DerivedUnit`（已 Intern）：
 
 ```go
 u.Ohm.Prefix(u.Mega)   // MΩ
@@ -63,7 +63,9 @@ force := u.Newton
 force.Dim()           // DerivedDimension{M:1, L:1, T:-2}
 force.FactorToBase()  // 到 SI 基本组合的乘数
 force.Key()           // 注册键
-force.SpecialSymbol() // "N"
+force.Symbol()        // "N"（默认专用名）
+force.NamedSymbol()   // "N"（仅存储的专用名，不含词头）
+force.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ```
 
 ### SI()

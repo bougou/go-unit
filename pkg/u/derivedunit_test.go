@@ -137,11 +137,11 @@ func TestDerivedQuantityForce(t *testing.T) {
 	}
 }
 
-func TestDerivedUnitSpecialSymbol(t *testing.T) {
+func TestDerivedUnitNamedSymbol(t *testing.T) {
 	force := Newton
 
-	if force.SpecialSymbol() != "N" {
-		t.Fatalf("SpecialSymbol() = %q, want N", force.SpecialSymbol())
+	if force.NamedSymbol() != "N" {
+		t.Fatalf("NamedSymbol() = %q, want N", force.NamedSymbol())
 	}
 	if force.Symbol() != "N" {
 		t.Fatalf("Symbol() = %q, want N", force.Symbol())

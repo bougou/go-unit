@@ -70,10 +70,10 @@ type DerivedUnit struct {
 	n unitTerm // amount (N)
 	j unitTerm // luminous intensity (J)
 
-	// specialSymbol is the SI special name (专用名称) when this compound unit has one,
+	// namedSymbol is the SI special name (专用名称) when this compound unit has one,
 	// e.g. "N" (牛顿) for kg·m·s⁻². Empty means only the compound form is used.
-	// When prefixScale ≠ 1, display is prefix + specialSymbol (e.g. "M"+"Ω" → "MΩ").
-	specialSymbol string
+	// When prefixScale ≠ 1, display is prefix + namedSymbol (e.g. "M"+"Ω" → "MΩ").
+	namedSymbol string
 
 	// unitScale is a non-SI multiplier relative to the coherent base composition of
 	// the active terms (e.g. 3600 for watt-hour vs joule). Zero means unset (= 1).
@@ -138,11 +138,11 @@ func (u *DerivedUnit) Luminous(unit LuminousUnit, exp int8) *DerivedUnit {
 }
 
 // Named sets the SI special name for this derived unit, e.g. "N" for kg·m·s⁻².
-func (u *DerivedUnit) Named(specialSymbol string) *DerivedUnit {
+func (u *DerivedUnit) Named(namedSymbol string) *DerivedUnit {
 	if u == nil {
 		return nil
 	}
-	u.specialSymbol = specialSymbol
+	u.namedSymbol = namedSymbol
 	return u
 }
 
@@ -166,14 +166,6 @@ func (u *DerivedUnit) Scale(factor float64) *DerivedUnit {
 	return u
 }
 
-// SpecialSymbol returns the SI special name, if any (without SI prefix).
-func (u *DerivedUnit) SpecialSymbol() string {
-	if u == nil {
-		return ""
-	}
-	return u.specialSymbol
-}
-
 // PrefixScale returns the SI prefix factor relative to the coherent named unit.
 // Returns 1 when no prefix is applied.
 func (u *DerivedUnit) PrefixScale() float64 {
@@ -194,18 +186,6 @@ func (u *DerivedUnit) effectiveUnitScale() float64 {
 	return u.unitScale
 }
 
-// displaySpecialSymbol returns the named symbol including any SI prefix (e.g. "MΩ").
-func (u *DerivedUnit) displaySpecialSymbol() string {
-	if u == nil || u.specialSymbol == "" {
-		return ""
-	}
-	prefix, ok := siPrefixDisplaySymbol(SIPrefix(u.effectivePrefixScale()))
-	if !ok {
-		return u.specialSymbol
-	}
-	return prefix + u.specialSymbol
-}
-
 // Prefix returns a named derived unit scaled by an SI decimal prefix factor.
 // The receiver must already have a special name (e.g. Ohm). Results are interned.
 //
@@ -218,7 +198,7 @@ func (u *DerivedUnit) Prefix(factor SIPrefix) *DerivedUnit {
 	if u == nil {
 		panic("Prefix on nil DerivedUnit")
 	}
-	if u.specialSymbol == "" {
+	if u.namedSymbol == "" {
 		panic("Prefix requires a named derived unit (call Named first)")
 	}
 	if factor <= 0 {
@@ -232,12 +212,12 @@ func (u *DerivedUnit) Prefix(factor SIPrefix) *DerivedUnit {
 	if scale == 1 {
 		coherent := u.clone()
 		coherent.prefixScale = 0
-		coherent.specialSymbol = u.specialSymbol
+		coherent.namedSymbol = u.namedSymbol
 		return coherent.MustIntern()
 	}
 
 	scaled := u.clone()
-	scaled.specialSymbol = u.specialSymbol
+	scaled.namedSymbol = u.namedSymbol
 	scaled.prefixScale = float64(scale)
 	return scaled.MustIntern()
 }
@@ -351,7 +331,7 @@ func (u *DerivedUnit) registryKey() Unit {
 		return ""
 	}
 
-	display := u.displaySpecialSymbol()
+	display := u.displayNamedSymbol()
 	if len(u.terms()) == 0 {
 		if display != "" {
 			return Unit("#" + display)
@@ -402,7 +382,7 @@ func (u *DerivedUnit) Intern() (*DerivedUnit, error) {
 	compKey := u.compositionKey()
 	key := u.registryKey()
 
-	if u.specialSymbol == "" {
+	if u.namedSymbol == "" {
 		if existing, ok := derivedRegistry[compKey]; ok {
 			return existing, nil
 		}
@@ -412,7 +392,7 @@ func (u *DerivedUnit) Intern() (*DerivedUnit, error) {
 
 	canonical := u.clone()
 	derivedRegistry[key] = canonical
-	if u.specialSymbol == "" {
+	if u.namedSymbol == "" {
 		derivedRegistry[compKey] = canonical
 	} else if u.effectivePrefixScale() == 1 {
 		// Only coherent (unprefixed) named units alias the composition key.
@@ -468,16 +448,16 @@ func (u *DerivedUnit) Of(value float64) DerivedQuantity {
 
 func (u *DerivedUnit) clone() *DerivedUnit {
 	return &DerivedUnit{
-		l:             u.l,
-		m:             u.m,
-		t:             u.t,
-		i:             u.i,
-		h:             u.h,
-		n:             u.n,
-		j:             u.j,
-		specialSymbol: u.specialSymbol,
-		unitScale:     u.unitScale,
-		prefixScale:   u.prefixScale,
+		l:           u.l,
+		m:           u.m,
+		t:           u.t,
+		i:           u.i,
+		h:           u.h,
+		n:           u.n,
+		j:           u.j,
+		namedSymbol: u.namedSymbol,
+		unitScale:   u.unitScale,
+		prefixScale: u.prefixScale,
 	}
 }
 
@@ -800,9 +780,9 @@ type formatOption struct {
 	precision int // PrecisionAuto means %g
 
 	// Symbol formatting (Unit / DerivedUnit / DerivedDimension Symbol).
-	mulSign  MulSign
-	divSign  DivSign
-	expSign  ExpSign
+	mulSign     MulSign
+	divSign     DivSign
+	expSign     ExpSign
 	dimOrder    DimOrder
 	useCompound bool // false (zero value): prefer SI special name when set
 }
@@ -903,8 +883,8 @@ func (u *DerivedUnit) symbolWith(opt formatOption) string {
 	if u == nil {
 		return ""
 	}
-	if !opt.useCompound && u.specialSymbol != "" {
-		return u.displaySpecialSymbol()
+	if !opt.useCompound && u.namedSymbol != "" {
+		return u.displayNamedSymbol()
 	}
 	compound := symbolFromTerms(u.terms(), &opt)
 	scale := u.effectivePrefixScale()
@@ -918,6 +898,26 @@ func (u *DerivedUnit) symbolWith(opt formatOption) string {
 	// Keep the SI prefix outside the compound so "k" is not glued onto "kg"
 	// (e.g. kW·h → "k(kg·m^2·s^-2)", not "kg·m^2·s^-2").
 	return prefix + "(" + compound + ")"
+}
+
+// NamedSymbol returns the SI special name, if any (without SI prefix).
+func (u *DerivedUnit) NamedSymbol() string {
+	if u == nil {
+		return ""
+	}
+	return u.namedSymbol
+}
+
+// displayNamedSymbol returns the named symbol including any SI prefix (e.g. "MΩ").
+func (u *DerivedUnit) displayNamedSymbol() string {
+	if u == nil || u.namedSymbol == "" {
+		return ""
+	}
+	prefix, ok := siPrefixDisplaySymbol(SIPrefix(u.effectivePrefixScale()))
+	if !ok {
+		return u.namedSymbol
+	}
+	return prefix + u.namedSymbol
 }
 
 func symbolFromTerms(terms []unitTerm, opt *formatOption) string {

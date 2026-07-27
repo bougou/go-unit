@@ -53,7 +53,7 @@ u.PrefixFormat(1048576, u.IEC)    // "1 Mi"
 
 ## 常量
 
-`prefix.go` 导出 `Kilo`、`Mega`、`Kibi`、`Mebi` 等 `float64` 因子。
+`prefix.go` 导出 SI 十进制因子 `Kilo`、`Mega` 等（类型 `SIPrefix`），以及 IEC 二进制因子 `Kibi`、`Mebi` 等（`float64`）。`Unit.Prefix` / `ByPrefix` 只接受 `SIPrefix`。
 
 字节倍数命名常量见 [字节常量](../reference/byte-constants/)。
 

@@ -47,10 +47,11 @@ func main() {
 	// 同量纲单位换算
 	fmt.Println(u.Length(1000, u.Meter).By(u.Meter.Prefix(u.Kilo))) // 1 km
 	fmt.Println(u.Length(1000, u.Meter).Prefix(u.Kilo))           // 1 km（等价写法）
-	fmt.Println(u.Ohm.Of(2e6).Prefix(u.Mega).Format(u.WithNamedSymbol(true))) // 2 MΩ
+	fmt.Println(u.Ohm.Of(2e6).Prefix(u.Mega).Format()) // 2 MΩ
 
 	// SI 专用名称 vs 组合符号
-	fmt.Println(u.Newton.Symbol(u.WithNamedSymbol(true))) // N
+	fmt.Println(u.Newton.Symbol()) // N
+	fmt.Println(u.Newton.Symbol(u.WithCompoundSymbol(true))) // kg·m·s^-2
 
 	// 从文本解析物理量
 	d, _ := u.LengthQuantityParse("10 km")

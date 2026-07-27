@@ -76,7 +76,7 @@ Internal helper `unitsProportional` verifies two units convert with a constant r
 
 ## What arithmetic does not do
 
-- Automatic simplification to SI special names (force stays as kg·m·s⁻² unless you `By(Newton)` or format with `WithNamedSymbol`)
+- Automatic simplification to SI special names (force stays as kg·m·s⁻² unless you `By(Newton)`; `Symbol()` / `Format()` default to the named form when set)
 - Unchecked float overflow/underflow handling
 - Uncertainty propagation
 

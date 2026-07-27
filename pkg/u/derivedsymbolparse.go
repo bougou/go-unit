@@ -498,14 +498,14 @@ func lookupPrefixedSpecialName(symbol string) (*DerivedUnit, bool) {
 	candidates := make([]candidate, 0)
 	seen := make(map[string]struct{})
 	for _, du := range derivedRegistry {
-		if du == nil || du.specialSymbol == "" || du.effectivePrefixScale() != 1 {
+		if du == nil || du.namedSymbol == "" || du.effectivePrefixScale() != 1 {
 			continue
 		}
-		if _, ok := seen[du.specialSymbol]; ok {
+		if _, ok := seen[du.namedSymbol]; ok {
 			continue
 		}
-		seen[du.specialSymbol] = struct{}{}
-		candidates = append(candidates, candidate{unit: du, sym: du.specialSymbol})
+		seen[du.namedSymbol] = struct{}{}
+		candidates = append(candidates, candidate{unit: du, sym: du.namedSymbol})
 	}
 	sort.Slice(candidates, func(i, j int) bool {
 		li, lj := len(candidates[i].sym), len(candidates[j].sym)
