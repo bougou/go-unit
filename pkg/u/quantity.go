@@ -1,5 +1,7 @@
 package u
 
+import "fmt"
+
 // derivedQuantity is implemented by Quantity, the seven SI base-dimension typed Quantity types,
 // and DerivedQuantity. It allows Mul and Div across base and derived quantities.
 type derivedQuantity interface {
@@ -46,27 +48,37 @@ func (q DerivedQuantity) asDerivedQuantity() (DerivedQuantity, bool) {
 }
 
 func mulQuantities(receiver derivedQuantity, other derivedQuantity) DerivedQuantity {
-	left, ok := receiver.asDerivedQuantity()
-	if !ok {
-		return DerivedQuantity{}
-	}
-	right, ok := other.asDerivedQuantity()
-	if !ok {
-		return left
-	}
-	return mulDerivedQuantities(left, right)
+	r, _ := tryMulQuantities(receiver, other)
+	return r
 }
 
 func divQuantities(receiver derivedQuantity, other derivedQuantity) DerivedQuantity {
+	r, _ := tryDivQuantities(receiver, other)
+	return r
+}
+
+func tryMulQuantities(receiver derivedQuantity, other derivedQuantity) (DerivedQuantity, error) {
 	left, ok := receiver.asDerivedQuantity()
 	if !ok {
-		return DerivedQuantity{}
+		return DerivedQuantity{}, fmt.Errorf("receiver unit: %w", ErrInvalidUnit)
 	}
 	right, ok := other.asDerivedQuantity()
 	if !ok {
-		return left
+		return left, fmt.Errorf("operand unit: %w", ErrInvalidUnit)
 	}
-	return divDerivedQuantities(left, right)
+	return tryMulDerivedQuantities(left, right)
+}
+
+func tryDivQuantities(receiver derivedQuantity, other derivedQuantity) (DerivedQuantity, error) {
+	left, ok := receiver.asDerivedQuantity()
+	if !ok {
+		return DerivedQuantity{}, fmt.Errorf("receiver unit: %w", ErrInvalidUnit)
+	}
+	right, ok := other.asDerivedQuantity()
+	if !ok {
+		return left, fmt.Errorf("operand unit: %w", ErrInvalidUnit)
+	}
+	return tryDivDerivedQuantities(left, right)
 }
 
 // Quantity is a numeric value with a single base-dimension unit.
@@ -109,36 +121,53 @@ func QuantityMustParse(s string) Quantity {
 }
 
 // Base converts q to the SI (国际单位制) base unit of its dimension.
+// On failure, returns q unchanged. Prefer TryBase when errors must be observed.
 //
 // Example: Quantity{Value: 1, Unit: Unit(Meter.Prefix(Kilo))}.Base() // 1000 m
 func (q Quantity) Base() Quantity {
+	r, _ := q.TryBase()
+	return r
+}
+
+// TryBase converts q to the SI base unit of its dimension.
+func (q Quantity) TryBase() (Quantity, error) {
 	if _, ok := q.Unit.DerivedUnit(); ok {
-		return q
+		return q, fmt.Errorf("derived unit has no single base: %w", ErrInvalidUnit)
 	}
 
 	def, ok := q.Unit.Def()
 	if !ok {
-		return q
+		return q, fmt.Errorf("unknown unit %q: %w", q.Unit, ErrInvalidUnit)
 	}
 	baseUnit := def.Dimension.Base()
 	if baseUnit == "" {
-		return q
+		return q, fmt.Errorf("dimension %s has no base unit: %w", def.Dimension, ErrInvalidUnit)
 	}
-	return Quantity{Value: def.ToBase(q.Value), Unit: baseUnit}
+	return Quantity{Value: def.ToBase(q.Value), Unit: baseUnit}, nil
 }
 
 // By converts q to another unit within the same dimension.
+// On failure, returns q unchanged. Prefer TryBy when errors must be observed.
 //
 // Example: Length(1000, Meter).By(Meter.Prefix(Kilo)) // 1 km
 func (q Quantity) By(u Unit) Quantity {
+	r, _ := q.TryBy(u)
+	return r
+}
+
+// TryBy converts q to another unit within the same dimension.
+func (q Quantity) TryBy(u Unit) (Quantity, error) {
 	targetDef, ok := u.Def()
 	if !ok {
-		return q
+		return q, fmt.Errorf("unknown target unit %q: %w", u, ErrInvalidUnit)
 	}
 	sourceDef, ok := q.Unit.Def()
-	if !ok || sourceDef.Dimension != targetDef.Dimension {
-		return q
+	if !ok {
+		return q, fmt.Errorf("unknown unit %q: %w", q.Unit, ErrInvalidUnit)
+	}
+	if sourceDef.Dimension != targetDef.Dimension {
+		return q, fmt.Errorf("want %s, got %s: %w", sourceDef.Dimension, targetDef.Dimension, ErrDimension)
 	}
 	baseVal := sourceDef.ToBase(q.Value)
-	return Quantity{Value: targetDef.FromBase(baseVal), Unit: u}
+	return Quantity{Value: targetDef.FromBase(baseVal), Unit: u}, nil
 }

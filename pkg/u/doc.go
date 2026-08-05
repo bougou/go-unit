@@ -25,6 +25,10 @@
 //
 // Quantity is the untyped alternative when the dimension is not fixed at compile time.
 //
+// Chainable arithmetic (Add, By, DivV, …) returns the receiver unchanged on failure
+// so fluent calls stay ergonomic. Each such method has a Try* counterpart that
+// returns an error (ErrDimension, ErrIncompatible, ErrDivByZero, ErrInvalidUnit, ErrRoot).
+//
 // # Parsing from text
 //
 // QuantityParse parses "value unit" strings into Quantity. Typed parsers

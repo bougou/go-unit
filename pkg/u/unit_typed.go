@@ -4,6 +4,7 @@ package u
 // Each SI (国际单位制) base dimension has a *Unit alias and a *Quantity struct that delegate
 // to Unit and Quantity. Methods mirror Quantity: Add/Sub require the same dimension;
 // Mul/Div can cross dimensions and return DerivedQuantity (导出量).
+// Try* counterparts return errors when the silent chainable methods would leave q unchanged.
 
 // LengthUnit is a unit of length (dimension L). See unit_si.go for constants.
 type LengthUnit Unit
@@ -45,11 +46,23 @@ func (q LengthQuantity) Base() LengthQuantity {
 	return LengthQuantity(Quantity(q).Base())
 }
 
+// TryBase converts q to the SI base unit of length (meter).
+func (q LengthQuantity) TryBase() (LengthQuantity, error) {
+	r, err := Quantity(q).TryBase()
+	return LengthQuantity(r), err
+}
+
 // By converts q to another length unit.
 //
 // Example: Length(1000, Meter).By(Meter.Prefix(Kilo)) // 1 km
 func (q LengthQuantity) By(u LengthUnit) LengthQuantity {
 	return LengthQuantity(Quantity(q).By(Unit(u)))
+}
+
+// TryBy converts q to another length unit.
+func (q LengthQuantity) TryBy(u LengthUnit) (LengthQuantity, error) {
+	r, err := Quantity(q).TryBy(Unit(u))
+	return LengthQuantity(r), err
 }
 
 // Prefix converts q to LengthUnit(q.Unit).Prefix(factor).
@@ -69,9 +82,21 @@ func (q LengthQuantity) Add(other LengthQuantity) LengthQuantity {
 	return LengthQuantity(Quantity(q).Add(Quantity(other)))
 }
 
+// TryAdd returns q plus other in q's unit.
+func (q LengthQuantity) TryAdd(other LengthQuantity) (LengthQuantity, error) {
+	r, err := Quantity(q).TryAdd(Quantity(other))
+	return LengthQuantity(r), err
+}
+
 // Sub returns q minus other in q's unit. Incompatible operands return q unchanged.
 func (q LengthQuantity) Sub(other LengthQuantity) LengthQuantity {
 	return LengthQuantity(Quantity(q).Sub(Quantity(other)))
+}
+
+// TrySub returns q minus other in q's unit.
+func (q LengthQuantity) TrySub(other LengthQuantity) (LengthQuantity, error) {
+	r, err := Quantity(q).TrySub(Quantity(other))
+	return LengthQuantity(r), err
 }
 
 // Mul returns the product as a derived quantity.
@@ -81,11 +106,21 @@ func (q LengthQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product as a derived quantity.
+func (q LengthQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns the quotient as a derived quantity.
 //
 // Example: Length(10, Meter.Prefix(Kilo)).Div(Time(2, Hour)) // 5 km/h
 func (q LengthQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
+}
+
+// TryDiv returns the quotient as a derived quantity.
+func (q LengthQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
 }
 
 // MulV scales q by v in q's unit.
@@ -96,6 +131,12 @@ func (q LengthQuantity) MulV(v float64) LengthQuantity {
 // DivV divides q by v in q's unit. Division by zero returns q unchanged.
 func (q LengthQuantity) DivV(v float64) LengthQuantity {
 	return LengthQuantity(Quantity(q).DivV(v))
+}
+
+// TryDivV divides q by v in q's unit.
+func (q LengthQuantity) TryDivV(v float64) (LengthQuantity, error) {
+	r, err := Quantity(q).TryDivV(v)
+	return LengthQuantity(r), err
 }
 
 // TimeUnit is a unit of time (dimension T).
@@ -133,9 +174,21 @@ func (q TimeQuantity) Base() TimeQuantity {
 	return TimeQuantity(Quantity(q).Base())
 }
 
+// TryBase converts q to the SI base unit of time (second).
+func (q TimeQuantity) TryBase() (TimeQuantity, error) {
+	r, err := Quantity(q).TryBase()
+	return TimeQuantity(r), err
+}
+
 // By converts q to another time unit.
 func (q TimeQuantity) By(u TimeUnit) TimeQuantity {
 	return TimeQuantity(Quantity(q).By(Unit(u)))
+}
+
+// TryBy converts q to another time unit.
+func (q TimeQuantity) TryBy(u TimeUnit) (TimeQuantity, error) {
+	r, err := Quantity(q).TryBy(Unit(u))
+	return TimeQuantity(r), err
 }
 
 // Prefix converts q to TimeUnit(q.Unit).Prefix(factor).
@@ -155,9 +208,21 @@ func (q TimeQuantity) Add(other TimeQuantity) TimeQuantity {
 	return TimeQuantity(Quantity(q).Add(Quantity(other)))
 }
 
+// TryAdd returns q plus other in q's unit.
+func (q TimeQuantity) TryAdd(other TimeQuantity) (TimeQuantity, error) {
+	r, err := Quantity(q).TryAdd(Quantity(other))
+	return TimeQuantity(r), err
+}
+
 // Sub returns q minus other in q's unit.
 func (q TimeQuantity) Sub(other TimeQuantity) TimeQuantity {
 	return TimeQuantity(Quantity(q).Sub(Quantity(other)))
+}
+
+// TrySub returns q minus other in q's unit.
+func (q TimeQuantity) TrySub(other TimeQuantity) (TimeQuantity, error) {
+	r, err := Quantity(q).TrySub(Quantity(other))
+	return TimeQuantity(r), err
 }
 
 // Mul returns the product as a derived quantity.
@@ -165,9 +230,19 @@ func (q TimeQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product as a derived quantity.
+func (q TimeQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns the quotient as a derived quantity.
 func (q TimeQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
+}
+
+// TryDiv returns the quotient as a derived quantity.
+func (q TimeQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
 }
 
 // MulV scales q by v in q's unit.
@@ -178,6 +253,12 @@ func (q TimeQuantity) MulV(v float64) TimeQuantity {
 // DivV divides q by v in q's unit.
 func (q TimeQuantity) DivV(v float64) TimeQuantity {
 	return TimeQuantity(Quantity(q).DivV(v))
+}
+
+// TryDivV divides q by v in q's unit.
+func (q TimeQuantity) TryDivV(v float64) (TimeQuantity, error) {
+	r, err := Quantity(q).TryDivV(v)
+	return TimeQuantity(r), err
 }
 
 // MassUnit is a unit of mass (dimension M).
@@ -215,9 +296,21 @@ func (q MassQuantity) Base() MassQuantity {
 	return MassQuantity(Quantity(q).Base())
 }
 
+// TryBase converts q to the SI base unit of mass (kilogram).
+func (q MassQuantity) TryBase() (MassQuantity, error) {
+	r, err := Quantity(q).TryBase()
+	return MassQuantity(r), err
+}
+
 // By converts q to another mass unit.
 func (q MassQuantity) By(u MassUnit) MassQuantity {
 	return MassQuantity(Quantity(q).By(Unit(u)))
+}
+
+// TryBy converts q to another mass unit.
+func (q MassQuantity) TryBy(u MassUnit) (MassQuantity, error) {
+	r, err := Quantity(q).TryBy(Unit(u))
+	return MassQuantity(r), err
 }
 
 // Prefix converts q to MassUnit(q.Unit).Prefix(factor).
@@ -237,9 +330,21 @@ func (q MassQuantity) Add(other MassQuantity) MassQuantity {
 	return MassQuantity(Quantity(q).Add(Quantity(other)))
 }
 
+// TryAdd returns q plus other in q's unit.
+func (q MassQuantity) TryAdd(other MassQuantity) (MassQuantity, error) {
+	r, err := Quantity(q).TryAdd(Quantity(other))
+	return MassQuantity(r), err
+}
+
 // Sub returns q minus other in q's unit.
 func (q MassQuantity) Sub(other MassQuantity) MassQuantity {
 	return MassQuantity(Quantity(q).Sub(Quantity(other)))
+}
+
+// TrySub returns q minus other in q's unit.
+func (q MassQuantity) TrySub(other MassQuantity) (MassQuantity, error) {
+	r, err := Quantity(q).TrySub(Quantity(other))
+	return MassQuantity(r), err
 }
 
 // Mul returns the product as a derived quantity.
@@ -249,9 +354,19 @@ func (q MassQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product as a derived quantity.
+func (q MassQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns the quotient as a derived quantity.
 func (q MassQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
+}
+
+// TryDiv returns the quotient as a derived quantity.
+func (q MassQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
 }
 
 // MulV scales q by v in q's unit.
@@ -262,6 +377,12 @@ func (q MassQuantity) MulV(v float64) MassQuantity {
 // DivV divides q by v in q's unit.
 func (q MassQuantity) DivV(v float64) MassQuantity {
 	return MassQuantity(Quantity(q).DivV(v))
+}
+
+// TryDivV divides q by v in q's unit.
+func (q MassQuantity) TryDivV(v float64) (MassQuantity, error) {
+	r, err := Quantity(q).TryDivV(v)
+	return MassQuantity(r), err
 }
 
 // CurrentUnit is a unit of electric current (dimension I).
@@ -299,9 +420,21 @@ func (q CurrentQuantity) Base() CurrentQuantity {
 	return CurrentQuantity(Quantity(q).Base())
 }
 
+// TryBase converts q to the SI base unit of current (ampere).
+func (q CurrentQuantity) TryBase() (CurrentQuantity, error) {
+	r, err := Quantity(q).TryBase()
+	return CurrentQuantity(r), err
+}
+
 // By converts q to another current unit.
 func (q CurrentQuantity) By(u CurrentUnit) CurrentQuantity {
 	return CurrentQuantity(Quantity(q).By(Unit(u)))
+}
+
+// TryBy converts q to another current unit.
+func (q CurrentQuantity) TryBy(u CurrentUnit) (CurrentQuantity, error) {
+	r, err := Quantity(q).TryBy(Unit(u))
+	return CurrentQuantity(r), err
 }
 
 // Prefix converts q to CurrentUnit(q.Unit).Prefix(factor).
@@ -321,9 +454,21 @@ func (q CurrentQuantity) Add(other CurrentQuantity) CurrentQuantity {
 	return CurrentQuantity(Quantity(q).Add(Quantity(other)))
 }
 
+// TryAdd returns q plus other in q's unit.
+func (q CurrentQuantity) TryAdd(other CurrentQuantity) (CurrentQuantity, error) {
+	r, err := Quantity(q).TryAdd(Quantity(other))
+	return CurrentQuantity(r), err
+}
+
 // Sub returns q minus other in q's unit.
 func (q CurrentQuantity) Sub(other CurrentQuantity) CurrentQuantity {
 	return CurrentQuantity(Quantity(q).Sub(Quantity(other)))
+}
+
+// TrySub returns q minus other in q's unit.
+func (q CurrentQuantity) TrySub(other CurrentQuantity) (CurrentQuantity, error) {
+	r, err := Quantity(q).TrySub(Quantity(other))
+	return CurrentQuantity(r), err
 }
 
 // Mul returns the product as a derived quantity.
@@ -331,9 +476,19 @@ func (q CurrentQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product as a derived quantity.
+func (q CurrentQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns the quotient as a derived quantity.
 func (q CurrentQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
+}
+
+// TryDiv returns the quotient as a derived quantity.
+func (q CurrentQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
 }
 
 // MulV scales q by v in q's unit.
@@ -344,6 +499,12 @@ func (q CurrentQuantity) MulV(v float64) CurrentQuantity {
 // DivV divides q by v in q's unit.
 func (q CurrentQuantity) DivV(v float64) CurrentQuantity {
 	return CurrentQuantity(Quantity(q).DivV(v))
+}
+
+// TryDivV divides q by v in q's unit.
+func (q CurrentQuantity) TryDivV(v float64) (CurrentQuantity, error) {
+	r, err := Quantity(q).TryDivV(v)
+	return CurrentQuantity(r), err
 }
 
 // TemperatureUnit is a unit of thermodynamic temperature (dimension Θ).
@@ -381,9 +542,21 @@ func (q TemperatureQuantity) Base() TemperatureQuantity {
 	return TemperatureQuantity(Quantity(q).Base())
 }
 
+// TryBase converts q to the SI base unit of temperature (kelvin).
+func (q TemperatureQuantity) TryBase() (TemperatureQuantity, error) {
+	r, err := Quantity(q).TryBase()
+	return TemperatureQuantity(r), err
+}
+
 // By converts q to another temperature unit.
 func (q TemperatureQuantity) By(u TemperatureUnit) TemperatureQuantity {
 	return TemperatureQuantity(Quantity(q).By(Unit(u)))
+}
+
+// TryBy converts q to another temperature unit.
+func (q TemperatureQuantity) TryBy(u TemperatureUnit) (TemperatureQuantity, error) {
+	r, err := Quantity(q).TryBy(Unit(u))
+	return TemperatureQuantity(r), err
 }
 
 // Prefix converts q to TemperatureUnit(q.Unit).Prefix(factor).
@@ -404,9 +577,21 @@ func (q TemperatureQuantity) Add(other TemperatureQuantity) TemperatureQuantity 
 	return TemperatureQuantity(Quantity(q).Add(Quantity(other)))
 }
 
+// TryAdd returns q plus other in q's unit.
+func (q TemperatureQuantity) TryAdd(other TemperatureQuantity) (TemperatureQuantity, error) {
+	r, err := Quantity(q).TryAdd(Quantity(other))
+	return TemperatureQuantity(r), err
+}
+
 // Sub returns q minus other in q's unit.
 func (q TemperatureQuantity) Sub(other TemperatureQuantity) TemperatureQuantity {
 	return TemperatureQuantity(Quantity(q).Sub(Quantity(other)))
+}
+
+// TrySub returns q minus other in q's unit.
+func (q TemperatureQuantity) TrySub(other TemperatureQuantity) (TemperatureQuantity, error) {
+	r, err := Quantity(q).TrySub(Quantity(other))
+	return TemperatureQuantity(r), err
 }
 
 // Mul returns the product as a derived quantity.
@@ -414,9 +599,19 @@ func (q TemperatureQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product as a derived quantity.
+func (q TemperatureQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns the quotient as a derived quantity.
 func (q TemperatureQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
+}
+
+// TryDiv returns the quotient as a derived quantity.
+func (q TemperatureQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
 }
 
 // MulV scales q by v in q's unit.
@@ -427,6 +622,12 @@ func (q TemperatureQuantity) MulV(v float64) TemperatureQuantity {
 // DivV divides q by v in q's unit.
 func (q TemperatureQuantity) DivV(v float64) TemperatureQuantity {
 	return TemperatureQuantity(Quantity(q).DivV(v))
+}
+
+// TryDivV divides q by v in q's unit.
+func (q TemperatureQuantity) TryDivV(v float64) (TemperatureQuantity, error) {
+	r, err := Quantity(q).TryDivV(v)
+	return TemperatureQuantity(r), err
 }
 
 // AmountUnit is a unit of amount of substance (dimension N).
@@ -464,9 +665,21 @@ func (q AmountQuantity) Base() AmountQuantity {
 	return AmountQuantity(Quantity(q).Base())
 }
 
+// TryBase converts q to the SI base unit of amount (mole).
+func (q AmountQuantity) TryBase() (AmountQuantity, error) {
+	r, err := Quantity(q).TryBase()
+	return AmountQuantity(r), err
+}
+
 // By converts q to another amount unit.
 func (q AmountQuantity) By(u AmountUnit) AmountQuantity {
 	return AmountQuantity(Quantity(q).By(Unit(u)))
+}
+
+// TryBy converts q to another amount unit.
+func (q AmountQuantity) TryBy(u AmountUnit) (AmountQuantity, error) {
+	r, err := Quantity(q).TryBy(Unit(u))
+	return AmountQuantity(r), err
 }
 
 // Prefix converts q to AmountUnit(q.Unit).Prefix(factor).
@@ -486,9 +699,21 @@ func (q AmountQuantity) Add(other AmountQuantity) AmountQuantity {
 	return AmountQuantity(Quantity(q).Add(Quantity(other)))
 }
 
+// TryAdd returns q plus other in q's unit.
+func (q AmountQuantity) TryAdd(other AmountQuantity) (AmountQuantity, error) {
+	r, err := Quantity(q).TryAdd(Quantity(other))
+	return AmountQuantity(r), err
+}
+
 // Sub returns q minus other in q's unit.
 func (q AmountQuantity) Sub(other AmountQuantity) AmountQuantity {
 	return AmountQuantity(Quantity(q).Sub(Quantity(other)))
+}
+
+// TrySub returns q minus other in q's unit.
+func (q AmountQuantity) TrySub(other AmountQuantity) (AmountQuantity, error) {
+	r, err := Quantity(q).TrySub(Quantity(other))
+	return AmountQuantity(r), err
 }
 
 // Mul returns the product as a derived quantity.
@@ -496,9 +721,19 @@ func (q AmountQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product as a derived quantity.
+func (q AmountQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns the quotient as a derived quantity.
 func (q AmountQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
+}
+
+// TryDiv returns the quotient as a derived quantity.
+func (q AmountQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
 }
 
 // MulV scales q by v in q's unit.
@@ -509,6 +744,12 @@ func (q AmountQuantity) MulV(v float64) AmountQuantity {
 // DivV divides q by v in q's unit.
 func (q AmountQuantity) DivV(v float64) AmountQuantity {
 	return AmountQuantity(Quantity(q).DivV(v))
+}
+
+// TryDivV divides q by v in q's unit.
+func (q AmountQuantity) TryDivV(v float64) (AmountQuantity, error) {
+	r, err := Quantity(q).TryDivV(v)
+	return AmountQuantity(r), err
 }
 
 // LuminousUnit is a unit of luminous intensity (dimension J).
@@ -546,9 +787,21 @@ func (q LuminousQuantity) Base() LuminousQuantity {
 	return LuminousQuantity(Quantity(q).Base())
 }
 
+// TryBase converts q to the SI base unit of luminous intensity (candela).
+func (q LuminousQuantity) TryBase() (LuminousQuantity, error) {
+	r, err := Quantity(q).TryBase()
+	return LuminousQuantity(r), err
+}
+
 // By converts q to another luminous unit.
 func (q LuminousQuantity) By(u LuminousUnit) LuminousQuantity {
 	return LuminousQuantity(Quantity(q).By(Unit(u)))
+}
+
+// TryBy converts q to another luminous unit.
+func (q LuminousQuantity) TryBy(u LuminousUnit) (LuminousQuantity, error) {
+	r, err := Quantity(q).TryBy(Unit(u))
+	return LuminousQuantity(r), err
 }
 
 // Prefix converts q to LuminousUnit(q.Unit).Prefix(factor).
@@ -568,9 +821,21 @@ func (q LuminousQuantity) Add(other LuminousQuantity) LuminousQuantity {
 	return LuminousQuantity(Quantity(q).Add(Quantity(other)))
 }
 
+// TryAdd returns q plus other in q's unit.
+func (q LuminousQuantity) TryAdd(other LuminousQuantity) (LuminousQuantity, error) {
+	r, err := Quantity(q).TryAdd(Quantity(other))
+	return LuminousQuantity(r), err
+}
+
 // Sub returns q minus other in q's unit.
 func (q LuminousQuantity) Sub(other LuminousQuantity) LuminousQuantity {
 	return LuminousQuantity(Quantity(q).Sub(Quantity(other)))
+}
+
+// TrySub returns q minus other in q's unit.
+func (q LuminousQuantity) TrySub(other LuminousQuantity) (LuminousQuantity, error) {
+	r, err := Quantity(q).TrySub(Quantity(other))
+	return LuminousQuantity(r), err
 }
 
 // Mul returns the product as a derived quantity.
@@ -578,9 +843,19 @@ func (q LuminousQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product as a derived quantity.
+func (q LuminousQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns the quotient as a derived quantity.
 func (q LuminousQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
+}
+
+// TryDiv returns the quotient as a derived quantity.
+func (q LuminousQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
 }
 
 // MulV scales q by v in q's unit.
@@ -591,4 +866,10 @@ func (q LuminousQuantity) MulV(v float64) LuminousQuantity {
 // DivV divides q by v in q's unit.
 func (q LuminousQuantity) DivV(v float64) LuminousQuantity {
 	return LuminousQuantity(Quantity(q).DivV(v))
+}
+
+// TryDivV divides q by v in q's unit.
+func (q LuminousQuantity) TryDivV(v float64) (LuminousQuantity, error) {
+	r, err := Quantity(q).TryDivV(v)
+	return LuminousQuantity(r), err
 }

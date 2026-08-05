@@ -94,23 +94,30 @@ func (q DerivedQuantity) SI() DerivedQuantity {
 
 // By converts q to target when both share the same derived dimension and every
 // dimension whose unit changes converts proportionally via the dimension base unit.
-// Otherwise q is returned unchanged.
+// Otherwise q is returned unchanged. Prefer TryBy when errors must be observed.
 //
 // Example: speed in km/h converted to m/s via By on the SI unit
 func (q DerivedQuantity) By(target *DerivedUnit) DerivedQuantity {
+	r, _ := q.TryBy(target)
+	return r
+}
+
+// TryBy converts q to target when both share the same derived dimension and every
+// dimension whose unit changes converts proportionally via the dimension base unit.
+func (q DerivedQuantity) TryBy(target *DerivedUnit) (DerivedQuantity, error) {
 	if q.Unit == nil || target == nil {
-		return q
+		return q, fmt.Errorf("by: %w", ErrInvalidUnit)
 	}
 	if !mustDerivedDim(q.Unit).Equal(mustDerivedDim(target)) {
-		return q
+		return q, fmt.Errorf("by: %w", ErrDimension)
 	}
 	if !derivedUnitsConvertible(q.Unit, target) {
-		return q
+		return q, fmt.Errorf("by: %w", ErrIncompatible)
 	}
 	return DerivedQuantity{
 		Value: q.Value * derivedUnitConversionFactor(q.Unit, target),
 		Unit:  target,
-	}
+	}, nil
 }
 
 // Prefix converts q to the same unit scaled by an SI decimal prefix.
@@ -118,29 +125,36 @@ func (q DerivedQuantity) By(target *DerivedUnit) DerivedQuantity {
 // Named derived units (e.g. Ohm) use DerivedUnit.Prefix. Unnamed units with
 // exactly one active base dimension prefix that base unit (e.g. A → mA after
 // Sqrt of ampere-squared). Multi-term unnamed units and nil are unchanged.
+// Prefer TryPrefix when errors must be observed.
 //
 // Example: Ohm.Of(2e6).Prefix(Mega) // 2 MΩ
 // Example: Watt.Of(P).Div(Ohm.Of(R)).Sqrt().Prefix(Milli) // current in mA
 func (q DerivedQuantity) Prefix(factor SIPrefix) DerivedQuantity {
+	r, _ := q.TryPrefix(factor)
+	return r
+}
+
+// TryPrefix converts q to the same unit scaled by an SI decimal prefix.
+func (q DerivedQuantity) TryPrefix(factor SIPrefix) (DerivedQuantity, error) {
 	if q.Unit == nil {
-		return q
+		return q, fmt.Errorf("prefix: %w", ErrInvalidUnit)
 	}
 	if q.Unit.namedSymbol != "" {
-		return q.By(q.Unit.Prefix(factor))
+		return q.TryBy(q.Unit.Prefix(factor))
 	}
 	terms := q.Unit.terms()
 	if len(terms) != 1 {
-		return q
+		return q, fmt.Errorf("prefix requires a named unit or single-dimension unit: %w", ErrInvalidUnit)
 	}
 	def, ok := terms[0].unit.Def()
 	if !ok {
-		return q
+		return q, fmt.Errorf("unknown unit %q: %w", terms[0].unit, ErrInvalidUnit)
 	}
 	prefixed, ok := prefixBaseDimensionUnit(terms[0].unit, def.Dimension, factor)
 	if !ok {
-		return q
+		return q, fmt.Errorf("prefix unsupported for dimension %s: %w", def.Dimension, ErrInvalidUnit)
 	}
-	return q.byDimension(def.Dimension, prefixed)
+	return q.tryByDimension(def.Dimension, prefixed)
 }
 
 // prefixBaseDimensionUnit applies an SI prefix to a single base-dimension unit.
@@ -167,61 +181,110 @@ func prefixBaseDimensionUnit(unit Unit, dim Dimension, factor SIPrefix) (Unit, b
 
 // ByLength converts only the length term of q's unit to u.
 // Other dimensions are unchanged. Non-proportional conversion returns q unchanged.
+// Prefer TryByLength when errors must be observed.
 func (q DerivedQuantity) ByLength(u LengthUnit) DerivedQuantity {
-	return q.byDimension(DimLength, Unit(u))
+	r, _ := q.TryByLength(u)
+	return r
+}
+
+// TryByLength converts only the length term of q's unit to u.
+func (q DerivedQuantity) TryByLength(u LengthUnit) (DerivedQuantity, error) {
+	return q.tryByDimension(DimLength, Unit(u))
 }
 
 // ByMass converts only the mass term of q's unit to u.
+// Prefer TryByMass when errors must be observed.
 func (q DerivedQuantity) ByMass(u MassUnit) DerivedQuantity {
-	return q.byDimension(DimMass, Unit(u))
+	r, _ := q.TryByMass(u)
+	return r
+}
+
+// TryByMass converts only the mass term of q's unit to u.
+func (q DerivedQuantity) TryByMass(u MassUnit) (DerivedQuantity, error) {
+	return q.tryByDimension(DimMass, Unit(u))
 }
 
 // ByTime converts only the time term of q's unit to u.
+// Prefer TryByTime when errors must be observed.
 func (q DerivedQuantity) ByTime(u TimeUnit) DerivedQuantity {
-	return q.byDimension(DimTime, Unit(u))
+	r, _ := q.TryByTime(u)
+	return r
+}
+
+// TryByTime converts only the time term of q's unit to u.
+func (q DerivedQuantity) TryByTime(u TimeUnit) (DerivedQuantity, error) {
+	return q.tryByDimension(DimTime, Unit(u))
 }
 
 // ByCurrent converts only the current term of q's unit to u.
+// Prefer TryByCurrent when errors must be observed.
 func (q DerivedQuantity) ByCurrent(u CurrentUnit) DerivedQuantity {
-	return q.byDimension(DimCurrent, Unit(u))
+	r, _ := q.TryByCurrent(u)
+	return r
+}
+
+// TryByCurrent converts only the current term of q's unit to u.
+func (q DerivedQuantity) TryByCurrent(u CurrentUnit) (DerivedQuantity, error) {
+	return q.tryByDimension(DimCurrent, Unit(u))
 }
 
 // ByTemperature converts only the temperature term of q's unit to u.
+// Prefer TryByTemperature when errors must be observed.
 func (q DerivedQuantity) ByTemperature(u TemperatureUnit) DerivedQuantity {
-	return q.byDimension(DimTemperature, Unit(u))
+	r, _ := q.TryByTemperature(u)
+	return r
+}
+
+// TryByTemperature converts only the temperature term of q's unit to u.
+func (q DerivedQuantity) TryByTemperature(u TemperatureUnit) (DerivedQuantity, error) {
+	return q.tryByDimension(DimTemperature, Unit(u))
 }
 
 // ByAmount converts only the amount-of-substance term of q's unit to u.
+// Prefer TryByAmount when errors must be observed.
 func (q DerivedQuantity) ByAmount(u AmountUnit) DerivedQuantity {
-	return q.byDimension(DimAmount, Unit(u))
+	r, _ := q.TryByAmount(u)
+	return r
+}
+
+// TryByAmount converts only the amount-of-substance term of q's unit to u.
+func (q DerivedQuantity) TryByAmount(u AmountUnit) (DerivedQuantity, error) {
+	return q.tryByDimension(DimAmount, Unit(u))
 }
 
 // ByLuminous converts only the luminous-intensity term of q's unit to u.
+// Prefer TryByLuminous when errors must be observed.
 func (q DerivedQuantity) ByLuminous(u LuminousUnit) DerivedQuantity {
-	return q.byDimension(DimLuminous, Unit(u))
+	r, _ := q.TryByLuminous(u)
+	return r
 }
 
-func (q DerivedQuantity) byDimension(dim Dimension, newUnit Unit) DerivedQuantity {
+// TryByLuminous converts only the luminous-intensity term of q's unit to u.
+func (q DerivedQuantity) TryByLuminous(u LuminousUnit) (DerivedQuantity, error) {
+	return q.tryByDimension(DimLuminous, Unit(u))
+}
+
+func (q DerivedQuantity) tryByDimension(dim Dimension, newUnit Unit) (DerivedQuantity, error) {
 	if q.Unit == nil {
-		return q
+		return q, fmt.Errorf("by %s: %w", dim, ErrInvalidUnit)
 	}
 	term := q.Unit.term(dim)
 	if term == nil || !term.Active() {
-		return q
+		return q, fmt.Errorf("unit has no %s term: %w", dim, ErrDimension)
 	}
 	if term.unit == newUnit {
-		return q
+		return q, nil
 	}
 	if !unitsProportional(term.unit, newUnit) {
-		return q
+		return q, fmt.Errorf("by %s: %w", dim, ErrIncompatible)
 	}
 	sourceDef, ok := term.unit.Def()
 	if !ok {
-		return q
+		return q, fmt.Errorf("unknown unit %q: %w", term.unit, ErrInvalidUnit)
 	}
 	targetDef, ok := newUnit.Def()
 	if !ok {
-		return q
+		return q, fmt.Errorf("unknown target unit %q: %w", newUnit, ErrInvalidUnit)
 	}
 	ratio := sourceDef.Scale / targetDef.Scale
 	factor := math.Pow(ratio, float64(term.exp))
@@ -232,7 +295,7 @@ func (q DerivedQuantity) byDimension(dim Dimension, newUnit Unit) DerivedQuantit
 	return DerivedQuantity{
 		Value: q.Value * factor,
 		Unit:  unit,
-	}
+	}, nil
 }
 
 // Compatible reports whether other has the same derived dimension as q.
@@ -248,71 +311,122 @@ func (q DerivedQuantity) Compatible(other DerivedQuantity) bool {
 // Add returns q plus other in q's unit.
 // Requires the same derived dimension and proportionally related units on every
 // base dimension (affine pairs such as °C/K are rejected). Otherwise returns q unchanged.
+// Prefer TryAdd when errors must be observed.
 func (q DerivedQuantity) Add(other DerivedQuantity) DerivedQuantity {
-	if !q.Compatible(other) || !derivedUnitsConvertible(q.Unit, other.Unit) {
-		return q
+	r, _ := q.TryAdd(other)
+	return r
+}
+
+// TryAdd returns q plus other in q's unit.
+func (q DerivedQuantity) TryAdd(other DerivedQuantity) (DerivedQuantity, error) {
+	if !q.Compatible(other) {
+		return q, fmt.Errorf("add: %w", ErrDimension)
 	}
-	converted := other.By(q.Unit)
-	return DerivedQuantity{Value: q.Value + converted.Value, Unit: q.Unit}
+	if !derivedUnitsConvertible(q.Unit, other.Unit) {
+		return q, fmt.Errorf("add: %w", ErrIncompatible)
+	}
+	converted, err := other.TryBy(q.Unit)
+	if err != nil {
+		return q, err
+	}
+	return DerivedQuantity{Value: q.Value + converted.Value, Unit: q.Unit}, nil
 }
 
 // Sub returns q minus other in q's unit.
 // Same requirements as Add: equal derived dimension and proportional units per
 // base dimension. Otherwise returns q unchanged.
+// Prefer TrySub when errors must be observed.
 func (q DerivedQuantity) Sub(other DerivedQuantity) DerivedQuantity {
-	if !q.Compatible(other) || !derivedUnitsConvertible(q.Unit, other.Unit) {
-		return q
+	r, _ := q.TrySub(other)
+	return r
+}
+
+// TrySub returns q minus other in q's unit.
+func (q DerivedQuantity) TrySub(other DerivedQuantity) (DerivedQuantity, error) {
+	if !q.Compatible(other) {
+		return q, fmt.Errorf("sub: %w", ErrDimension)
 	}
-	converted := other.By(q.Unit)
-	return DerivedQuantity{Value: q.Value - converted.Value, Unit: q.Unit}
+	if !derivedUnitsConvertible(q.Unit, other.Unit) {
+		return q, fmt.Errorf("sub: %w", ErrIncompatible)
+	}
+	converted, err := other.TryBy(q.Unit)
+	if err != nil {
+		return q, err
+	}
+	return DerivedQuantity{Value: q.Value - converted.Value, Unit: q.Unit}, nil
 }
 
 // Mul returns the product of q and other. The result unit prefers q's unit per dimension.
 // Every base dimension present in both operands must use proportionally related units;
-// otherwise returns q unchanged.
+// otherwise returns q unchanged. Prefer TryMul when errors must be observed.
 func (q DerivedQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
 
+// TryMul returns the product of q and other.
+func (q DerivedQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
+	return tryMulQuantities(q, other)
+}
+
 // Div returns q divided by other. Same-dimension division yields a dimensionless quantity.
 // Overlapping base dimensions must use proportionally related units. Division by zero
-// or non-proportional overlap returns q unchanged.
+// or non-proportional overlap returns q unchanged. Prefer TryDiv when errors must be observed.
 func (q DerivedQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
 }
 
+// TryDiv returns q divided by other.
+func (q DerivedQuantity) TryDiv(other derivedQuantity) (DerivedQuantity, error) {
+	return tryDivQuantities(q, other)
+}
+
 // Sqrt returns the square root of q (Root(2)).
 // The result is unchanged when any base exponent is odd, the value is negative,
-// or the unit is nil.
+// or the unit is nil. Prefer TrySqrt when errors must be observed.
 //
 // Example: Watt.Of(20).Div(Ohm.Of(5000)).Sqrt() // √(P/R) → current
 func (q DerivedQuantity) Sqrt() DerivedQuantity {
 	return q.Root(2)
 }
 
+// TrySqrt returns the square root of q (TryRoot(2)).
+func (q DerivedQuantity) TrySqrt() (DerivedQuantity, error) {
+	return q.TryRoot(2)
+}
+
 // Root returns the nth root of q: value and every base-dimension exponent are scaled by 1/n.
 // n must be >= 2. Even roots of negative values, and exponents not divisible by n,
 // return q unchanged (same silent-failure style as Add/Div).
+// Prefer TryRoot when errors must be observed.
 //
 // Example: area.Root(2) // length when area has dimension L²
 func (q DerivedQuantity) Root(n int) DerivedQuantity {
-	if q.Unit == nil || n < 2 {
-		return q
+	r, _ := q.TryRoot(n)
+	return r
+}
+
+// TryRoot returns the nth root of q.
+func (q DerivedQuantity) TryRoot(n int) (DerivedQuantity, error) {
+	if q.Unit == nil {
+		return q, fmt.Errorf("root: %w", ErrInvalidUnit)
+	}
+	if n < 2 {
+		return q, fmt.Errorf("root degree %d: %w", n, ErrRoot)
 	}
 	if q.Value < 0 && n%2 == 0 {
-		return q
+		return q, fmt.Errorf("even root of negative value: %w", ErrRoot)
 	}
 	unit, ok := rootDerivedUnit(q.Unit, n)
 	if !ok {
-		return q
+		return q, fmt.Errorf("exponents not divisible by %d: %w", n, ErrRoot)
 	}
 	base := q.Value * mustFactorToBase(q.Unit)
 	rootBase := nthRoot(base, n)
 	factor := mustFactorToBase(unit)
 	if factor == 0 {
-		return q
+		return q, fmt.Errorf("root unit factor: %w", ErrInvalidUnit)
 	}
-	return DerivedQuantity{Value: rootBase / factor, Unit: unit}
+	return DerivedQuantity{Value: rootBase / factor, Unit: unit}, nil
 }
 
 func nthRoot(v float64, n int) float64 {
@@ -325,46 +439,46 @@ func nthRoot(v float64, n int) float64 {
 	return math.Pow(v, 1/float64(n))
 }
 
-func mulDerivedQuantities(q, other DerivedQuantity) DerivedQuantity {
+func tryMulDerivedQuantities(q, other DerivedQuantity) (DerivedQuantity, error) {
 	if q.Unit == nil || other.Unit == nil {
-		return q
+		return q, fmt.Errorf("mul: %w", ErrInvalidUnit)
 	}
 	if !derivedUnitsOverlapProportional(q.Unit, other.Unit) {
-		return q
+		return q, fmt.Errorf("mul: %w", ErrIncompatible)
 	}
 	unit := mulDerivedUnits(q.Unit, other.Unit)
 	baseResult := q.Value * mustFactorToBase(q.Unit) * other.Value * mustFactorToBase(other.Unit)
 	factor := mustFactorToBase(unit)
 	if factor == 0 {
-		return q
+		return q, fmt.Errorf("mul unit factor: %w", ErrInvalidUnit)
 	}
 	return DerivedQuantity{
 		Value: baseResult / factor,
 		Unit:  unit,
-	}
+	}, nil
 }
 
-func divDerivedQuantities(q, other DerivedQuantity) DerivedQuantity {
+func tryDivDerivedQuantities(q, other DerivedQuantity) (DerivedQuantity, error) {
 	if q.Unit == nil || other.Unit == nil {
-		return q
+		return q, fmt.Errorf("div: %w", ErrInvalidUnit)
 	}
 	if !derivedUnitsOverlapProportional(q.Unit, other.Unit) {
-		return q
+		return q, fmt.Errorf("div: %w", ErrIncompatible)
 	}
 	divisor := other.Value * mustFactorToBase(other.Unit)
 	if divisor == 0 {
-		return q
+		return q, ErrDivByZero
 	}
 	unit := divDerivedUnits(q.Unit, other.Unit)
 	baseResult := q.Value * mustFactorToBase(q.Unit) / divisor
 	factor := mustFactorToBase(unit)
 	if factor == 0 {
-		return q
+		return q, fmt.Errorf("div unit factor: %w", ErrInvalidUnit)
 	}
 	return DerivedQuantity{
 		Value: baseResult / factor,
 		Unit:  unit,
-	}
+	}, nil
 }
 
 // MulV scales q by v in q's unit.
@@ -373,9 +487,16 @@ func (q DerivedQuantity) MulV(v float64) DerivedQuantity {
 }
 
 // DivV divides q by v in q's unit. Division by zero returns q unchanged.
+// Prefer TryDivV when errors must be observed.
 func (q DerivedQuantity) DivV(v float64) DerivedQuantity {
+	r, _ := q.TryDivV(v)
+	return r
+}
+
+// TryDivV divides q by v in q's unit.
+func (q DerivedQuantity) TryDivV(v float64) (DerivedQuantity, error) {
 	if v == 0 {
-		return q
+		return q, ErrDivByZero
 	}
-	return DerivedQuantity{Value: q.Value / v, Unit: q.Unit}
+	return DerivedQuantity{Value: q.Value / v, Unit: q.Unit}, nil
 }
