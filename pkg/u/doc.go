@@ -19,7 +19,9 @@
 //
 // Use typed constructors and quantity types for compile-time dimension safety:
 //
-//	d := Length(10, Meter.Prefix(Kilo))
+//	import "github.com/bougou/go-unit/pkg/prefix"
+//
+//	d := Length(10, Meter.Prefix(prefix.Kilo))
 //	t := Time(2, Hour)
 //	speed := d.Div(t) // DerivedQuantity: 5 km/h
 //
@@ -35,9 +37,9 @@
 // (LengthQuantityParse, TimeQuantityParse, …) validate a single base dimension.
 // DerivedQuantityParse accepts compound and SI special-name units (N, m/s, …).
 // DerivedUnitParse rebuilds a DerivedUnit from base-unit symbols (km/h, …)
-// when no pre-registered alias exists. Each Parse has a MustParse variant.
+// when no pre-registered alias exists. Each Parse has a MustParse variant
+// (including DerivedUnitMustParse).
 // Use errors.Is(err, ErrDimension) for dimension mismatches.
-// PrefixParse is for plain numeric scaling, not physical units.
 //
 // # Derived units and Intern
 //
@@ -62,18 +64,20 @@
 //
 // # SI prefix scaling — Unit.Prefix / DerivedUnit.Prefix
 //
-// Anchor.Prefix(prefix) applies an SI decimal factor without defining a new unit type:
+// Anchor.Prefix(prefix) applies an SI decimal factor without defining a new unit type.
+// Prefix factors come from package prefix (github.com/bougou/go-unit/pkg/prefix):
 //
-//	Meter.Prefix(Kilo)   // km
-//	Ohm.Prefix(Mega)     // MΩ; FactorToBase = 1e6
-//	r.By(Ohm.Prefix(Mega))
+//	Meter.Prefix(prefix.Kilo)   // km
+//	Ohm.Prefix(prefix.Mega)     // MΩ; FactorToBase = 1e6
+//	r.By(Ohm.Prefix(prefix.Mega))
 //
-// Mass keeps Gram (prefix root) and Kilogram (SI base): Gram.Prefix(Milli) → mg,
-// Gram.Prefix(Kilo) → Kilogram, Kilogram.Prefix(Milli) → Gram. Affine units such as
+// Mass keeps Gram (prefix root) and Kilogram (SI base): Gram.Prefix(prefix.Milli) → mg,
+// Gram.Prefix(prefix.Kilo) → Kilogram, Kilogram.Prefix(prefix.Milli) → Gram. Affine units such as
 // Celsius reject Prefix.
 //
-// # Prefix helpers
+// # Numeric prefixes
 //
-// PrefixParse and PrefixFormat handle SI/IEC (国际电工委员会) numeric prefixes (K, M, Mi, …)
-// separately from physical units. Strip unit suffixes before parsing.
+// For SI/IEC (国际电工委员会) numeric prefix parsing and formatting (K, M, Mi, …)
+// without physical units, use package prefix (PrefixParse, PrefixFormat).
+// Strip unit suffixes before parsing.
 package u

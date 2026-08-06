@@ -1,5 +1,9 @@
 package u
 
+import (
+	"github.com/bougou/go-unit/pkg/prefix"
+)
+
 // SI (国际单位制) coherent derived dimensions (一贯导出量纲) and units with special names
 // (专用名称，22 SI derived units), plus common electrical / magnetic convenience units.
 // Degree Celsius (°C, 摄氏度) is defined as Celsius in unit_si.go (affine temperature 仿射温度，not DerivedUnit).
@@ -118,7 +122,7 @@ var Pascal *DerivedUnit
 var Joule *DerivedUnit
 
 // WattHour (W·h, 瓦时) is a convenience unit of energy（能量）; 1 W·h = 3600 J.
-// Use WattHour.Prefix(Kilo) for kW·h.
+// Use WattHour.Prefix(prefix.Kilo) for kW·h.
 var WattHour *DerivedUnit
 
 // Watt (W, 瓦特) is the SI unit of power（功率）.
@@ -146,7 +150,7 @@ var ElectricalHorsePower *DerivedUnit
 var Coulomb *DerivedUnit
 
 // AmpereHour (A·h, 安时) is a convenience unit of electric charge（电荷）; 1 A·h = 3600 C.
-// Use AmpereHour.Prefix(Kilo) for kA·h.
+// Use AmpereHour.Prefix(prefix.Kilo) for kA·h.
 var AmpereHour *DerivedUnit
 
 // Volt (V, 伏特) is the SI unit of electric potential / voltage（电压/电势）.
@@ -231,8 +235,8 @@ var Sievert *DerivedUnit
 var Katal *DerivedUnit
 
 // SquareMeter (m², 平方米) is the coherent SI unit of area（面积）.
-// Do not use SquareMeter.Prefix(Kilo) for km² — that scales by 10³, not 10⁶.
-// Use SquareKilometer (or Length(Meter.Prefix(Kilo), 2)) instead.
+// Do not use SquareMeter.Prefix(prefix.Kilo) for km² — that scales by 10³, not 10⁶.
+// Use SquareKilometer (or Length(Meter.Prefix(prefix.Kilo), 2)) instead.
 var SquareMeter *DerivedUnit
 
 // SquareKilometer (km², 平方千米) is a common SI area unit; 1 km² = 10⁶ m².
@@ -322,9 +326,9 @@ func init() {
 	Sievert = NewDerivedUnit().Length(Meter, 2).Time(Second, -2).Named("Sv").MustIntern()
 	Katal = NewDerivedUnit().Amount(Mole, 1).Time(Second, -1).Named("kat").MustIntern()
 	SquareMeter = NewDerivedUnit().Length(Meter, 2).Named("m²").MustIntern()
-	SquareKilometer = NewDerivedUnit().Length(Meter.Prefix(Kilo), 2).Named("km²").MustIntern()
-	SquareCentimeter = NewDerivedUnit().Length(Meter.Prefix(Centi), 2).Named("cm²").MustIntern()
-	SquareMillimeter = NewDerivedUnit().Length(Meter.Prefix(Milli), 2).Named("mm²").MustIntern()
+	SquareKilometer = NewDerivedUnit().Length(Meter.Prefix(prefix.Kilo), 2).Named("km²").MustIntern()
+	SquareCentimeter = NewDerivedUnit().Length(Meter.Prefix(prefix.Centi), 2).Named("cm²").MustIntern()
+	SquareMillimeter = NewDerivedUnit().Length(Meter.Prefix(prefix.Milli), 2).Named("mm²").MustIntern()
 	Are = NewDerivedUnit().Length(Meter, 2).Named("a").Scale(100).MustIntern()
 	Hectare = NewDerivedUnit().Length(Meter, 2).Named("ha").Scale(1e4).MustIntern()
 	Acre = NewDerivedUnit().Length(Meter, 2).Named("ac").Scale(4046.8564224).MustIntern()

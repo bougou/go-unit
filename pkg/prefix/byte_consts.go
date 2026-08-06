@@ -1,4 +1,4 @@
-package u
+package prefix
 
 // see: http://en.wikipedia.org/wiki/Binary_prefix
 //

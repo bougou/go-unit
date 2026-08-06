@@ -5,7 +5,7 @@ import "fmt"
 // Unit is the stable internal identifier for a registered or derived unit.
 // Display symbols come from UnitDef.Symbol or DerivedUnit.Symbol.
 //
-// Example: Unit(Meter.Prefix(Kilo)).Symbol() // "km"
+// Example: Unit(Meter.Prefix(prefix.Kilo)).Symbol() // "km"
 type Unit string
 
 // unitDef describes a unit and how to convert it to its dimension's SI (国际单位制) base unit.

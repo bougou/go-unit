@@ -5,7 +5,11 @@ sidebar:
   order: 3
 ---
 
-`byte_consts.go` 导出字节倍数的命名常量，属于**纯数值**，不是带量纲的物理量。
+包 **`prefix`**（`pkg/prefix/byte_consts.go`）导出字节倍数的命名常量，属于**纯数值**，不是带量纲的物理量。
+
+```go
+import "github.com/bougou/go-unit/pkg/prefix"
+```
 
 ## 十进制（SI 风格，1000）
 
@@ -33,11 +37,11 @@ sidebar:
 ## 示例
 
 ```go
-size := 512 * u.MiB
-u.PrefixFormat(float64(size), u.IEC) // "512 Mi"
+size := 512 * prefix.MiB
+prefix.PrefixFormat(float64(size), prefix.IEC) // "512 Mi"
 ```
 
-解析 `"1.5 GiB"` 时去掉 `B`，对 `"1.5Gi"` 调用 `PrefixParse(..., u.IEC)`。
+解析 `"1.5 GiB"` 时去掉 `B`，对 `"1.5Gi"` 调用 `prefix.PrefixParse(..., prefix.IEC)`。
 
 ## 参考
 

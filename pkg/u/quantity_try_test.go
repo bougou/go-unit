@@ -4,14 +4,16 @@ import (
 	"errors"
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestTryAddSubDimension(t *testing.T) {
-	sum, err := Length(5, Meter.Prefix(Kilo)).TryAdd(Length(500, Meter))
+	sum, err := Length(5, Meter.Prefix(prefix.Kilo)).TryAdd(Length(500, Meter))
 	if err != nil {
 		t.Fatalf("TryAdd: %v", err)
 	}
-	if sum.Value != 5.5 || sum.Unit != Unit(Meter.Prefix(Kilo)) {
+	if sum.Value != 5.5 || sum.Unit != Unit(Meter.Prefix(prefix.Kilo)) {
 		t.Fatalf("TryAdd = %+v, want 5.5 km", sum)
 	}
 
@@ -22,11 +24,11 @@ func TestTryAddSubDimension(t *testing.T) {
 }
 
 func TestTryByAndDivV(t *testing.T) {
-	got, err := Length(1000, Meter).TryBy(Meter.Prefix(Kilo))
+	got, err := Length(1000, Meter).TryBy(Meter.Prefix(prefix.Kilo))
 	if err != nil {
 		t.Fatalf("TryBy: %v", err)
 	}
-	if got.Value != 1 || got.Unit != Unit(Meter.Prefix(Kilo)) {
+	if got.Value != 1 || got.Unit != Unit(Meter.Prefix(prefix.Kilo)) {
 		t.Fatalf("TryBy = %+v, want 1 km", got)
 	}
 
@@ -58,7 +60,7 @@ func TestTryDerivedAddIncompatible(t *testing.T) {
 }
 
 func TestTryRoot(t *testing.T) {
-	area := Length(2, Meter.Prefix(Kilo)).Mul(Length(8, Meter.Prefix(Kilo)))
+	area := Length(2, Meter.Prefix(prefix.Kilo)).Mul(Length(8, Meter.Prefix(prefix.Kilo)))
 	side, err := area.TrySqrt()
 	if err != nil {
 		t.Fatalf("TrySqrt: %v", err)
@@ -80,7 +82,7 @@ func TestTryRoot(t *testing.T) {
 }
 
 func TestTryMulDiv(t *testing.T) {
-	speed, err := Length(10, Meter.Prefix(Kilo)).TryDiv(Time(2, Hour))
+	speed, err := Length(10, Meter.Prefix(prefix.Kilo)).TryDiv(Time(2, Hour))
 	if err != nil {
 		t.Fatalf("TryDiv: %v", err)
 	}

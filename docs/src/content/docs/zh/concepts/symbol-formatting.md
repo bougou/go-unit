@@ -15,7 +15,9 @@ sidebar:
 | 导出量纲 | 单字母指数 |
 
 ```go
-u.Unit(u.Meter.Prefix(u.Kilo)).Symbol()                    // "km"
+import "github.com/bougou/go-unit/pkg/prefix"
+
+u.Unit(u.Meter.Prefix(prefix.Kilo)).Symbol()                    // "km"
 u.Newton.Symbol()                               // "N"
 u.Newton.NamedSymbol()                          // "N"（不含词头）
 u.Newton.Symbol(u.WithCompoundSymbol(true))     // "kg·m·s^-2"
@@ -68,7 +70,7 @@ u.Newton.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ## 示例
 
 ```go
-speed := u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1)
+speed := u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1)
 
 speed.Symbol(u.WithExpSign(u.ExpSignSup))   // "km·h⁻¹"
 speed.Symbol(u.WithDivSign(u.DivSignSlash)) // "km/h"

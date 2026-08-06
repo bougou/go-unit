@@ -1,4 +1,4 @@
-package u
+package prefix
 
 import (
 	"fmt"
@@ -99,10 +99,10 @@ const (
 	Yobi float64 = 1 << 80 // yobi (尧比，2⁸⁰)
 )
 
-// Symbol is a single-character SI or IEC numeric prefix (K, M, G, …).
-type Symbol rune
+// PrefixSymbol is a single-character SI or IEC numeric prefix (K, M, G, …).
+type PrefixSymbol rune
 
-var fakeSymbol Symbol = '_'
+var fakeSymbol PrefixSymbol = '_'
 
 var (
 	scalesIEC = []float64{
@@ -111,7 +111,7 @@ var (
 		Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi,
 	}
 
-	symbolsIEC = []Symbol{
+	symbolsIEC = []PrefixSymbol{
 		'y', 'z', 'a', 'f', 'p', 'n', 'u', 'm',
 		fakeSymbol,
 		'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y',
@@ -138,7 +138,7 @@ var (
 		float64(Kilo), float64(Mega), float64(Giga), float64(Tera), float64(Peta),
 		float64(Exa), float64(Zetta), float64(Yotta), float64(Ronna), float64(Quetta),
 	}
-	symbolsSI = []Symbol{
+	symbolsSI = []PrefixSymbol{
 		'q', 'r', 'y', 'z', 'a', 'f', 'p', 'n', 'u', 'm',
 		fakeSymbol,
 		'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q',
@@ -188,7 +188,7 @@ func init() {
 	AllValidSymbols = string(allValidSymbols)
 }
 
-func getExponentScaleSymbol(val float64, prefixMode PrefixMode) (exp int, scale float64, symbol Symbol, oppositeScale float64) {
+func getExponentScaleSymbol(val float64, prefixMode PrefixMode) (exp int, scale float64, symbol PrefixSymbol, oppositeScale float64) {
 	val = math.Abs(val)
 
 	switch prefixMode {
@@ -221,7 +221,7 @@ func getScaleOfSymbol(symbol rune, prefixMode PrefixMode) (scale float64, oppsit
 		symbol = 'u'
 	}
 
-	var symbols []Symbol
+	var symbols []PrefixSymbol
 	var scales []float64
 
 	switch prefixMode {

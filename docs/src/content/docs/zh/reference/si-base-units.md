@@ -4,13 +4,13 @@ description: "SI 基本单位"
 sidebar:
   order: 1
 ---
-常量定义于 `unit_si.go`。各量纲只导出**锚点**与非 SI 单位；SI 十进制倍数一律用 `Anchor.Prefix(prefix)`（惰性注册）。
+常量定义于 `unit_si.go`。各量纲只导出**锚点**与非 SI 单位；SI 十进制倍数一律用 `Anchor.Prefix(factor)`，因子来自包 [`prefix`](../guides/numeric-prefixes/)（惰性注册）。
 
 ## 长度（`LengthUnit`）— 基本单位：米
 
 | 分类 | 常量 / 写法 |
 |------|------|
-| SI 锚点 | `Meter`；词头如 `Meter.Prefix(Kilo)` → km |
+| SI 锚点 | `Meter`；词头如 `Meter.Prefix(prefix.Kilo)` → km |
 | 科学 | `Angstrom`、`AstronomicalUnit`、`LightYear`、`Parsec` |
 | 英制/美制 | `Inch`、`Foot`、`Yard`、`Mile`、`NauticalMile` 等 |
 | 排版 | `Point`、`Pica` |
@@ -21,7 +21,7 @@ sidebar:
 | 分类 | 常量 / 写法 |
 |------|------|
 | SI | `Kilogram`（基本单位）、`Gram`（词头根） |
-| 词头 | 挂在克上：`Gram.Prefix(Milli)` → mg；`Gram.Prefix(Kilo)` → `Kilogram`；`Kilogram.Prefix(Milli)` → `Gram` |
+| 词头 | 挂在克上：`Gram.Prefix(prefix.Milli)` → mg；`Gram.Prefix(prefix.Kilo)` → `Kilogram`；`Kilogram.Prefix(prefix.Milli)` → `Gram` |
 | 其它 | `Tonne`、常衡/金衡、克拉/道尔顿、斤/两等 |
 
 ## 时间（`TimeUnit`）— 基本单位：秒
@@ -50,8 +50,8 @@ sidebar:
 ## 符号
 
 ```go
-u.Unit(u.Meter.Prefix(u.Kilo)).Symbol() // "km"
-u.Unit(u.Gram.Prefix(u.Milli)).Symbol() // "mg"
+u.Unit(u.Meter.Prefix(prefix.Kilo)).Symbol() // "km"
+u.Unit(u.Gram.Prefix(prefix.Milli)).Symbol() // "mg"
 u.Unit(u.Celsius).Symbol()         // "°C"
 ```
 

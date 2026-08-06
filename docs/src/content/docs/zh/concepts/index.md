@@ -54,6 +54,6 @@ DerivedDimension（导出量纲） → DerivedUnit（导出单位） → Derived
 
 由基本单位符号组成的**未注册导出符号**（如 `km/h`）在 lookup 失败时会通过 `DerivedUnitParse` 解析。SI 专用名（`N`、`Hz`）仍依赖注册表。
 
-**数值词头**（K、M、Mi）单独成章，因其作用于纯数字，而非带量纲的物理量。物理单位用 `QuantityParse`；纯数字缩放用 `PrefixParse`。
+**数值词头**（K、M、Mi）位于包 [`prefix`](../guides/numeric-prefixes/)，因其作用于纯数字，而非带量纲的物理量。物理单位用 `QuantityParse`；纯数字缩放用 `prefix.PrefixParse`。
 
 下一步：[量纲 →](dimensions/)

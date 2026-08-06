@@ -8,11 +8,13 @@ sidebar:
 
 ## 构建
 
-`NewDerivedUnit()` 链式设置各量纲：
+`NewDerivedUnit()` 链式设置各量纲。`prefix.Kilo` 等 SI 十进制因子来自 `github.com/bougou/go-unit/pkg/prefix`：
 
 ```go
+import "github.com/bougou/go-unit/pkg/prefix"
+
 speed := u.NewDerivedUnit().
-    Length(u.Meter.Prefix(u.Kilo), 1).
+    Length(u.Meter.Prefix(prefix.Kilo), 1).
     Time(u.Hour, -1)
 
 force := u.NewDerivedUnit().
@@ -46,15 +48,17 @@ newton := u.NewDerivedUnit().
 
 ### Prefix() — 专用名上的 SI 词头
 
-具有专用名的导出单位可用 `Prefix()` 缩放，返回同类型的 `*DerivedUnit`（已 Intern）：
+具有专用名的导出单位可用 `Prefix()` 按包 `prefix` 中的 SI 十进制因子缩放，返回同类型的 `*DerivedUnit`（已 Intern）：
 
 ```go
-u.Ohm.Prefix(u.Mega)   // MΩ
-u.Newton.Prefix(u.Kilo) // kN
-u.Ohm.Prefix(u.Mega).Prefix(u.Micro) // 回到 Ω（倍率相消）
+import "github.com/bougou/go-unit/pkg/prefix"
+
+u.Ohm.Prefix(prefix.Mega)   // MΩ
+u.Newton.Prefix(prefix.Kilo) // kN
+u.Ohm.Prefix(prefix.Mega).Prefix(prefix.Micro) // 回到 Ω（倍率相消）
 ```
 
-`FactorToBase` 含词头倍率；`By` 可在 `Ohm` 与 `Ohm.Prefix(Mega)` 之间换算。解析支持 `"1 MΩ"`、`"2 kN"` 等形式。
+`FactorToBase` 含词头倍率；`By` 可在 `Ohm` 与 `Ohm.Prefix(prefix.Mega)` 之间换算。解析支持 `"1 MΩ"`、`"2 kN"` 等形式。
 
 ## 查询
 
@@ -68,12 +72,12 @@ force.NamedSymbol()   // "N"（仅存储的专用名，不含词头）
 force.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ```
 
-### SI()
+### Base()
 
 改写为各维 SI 基本单位：
 
 ```go
-u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1).SI()
+u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1).Base()
 // → m¹·s⁻¹
 ```
 
@@ -82,7 +86,7 @@ u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1).SI()
 用以下两种等价写法附加数值，或通过类型化物理量的 `Mul` / `Div` 得到：
 
 ```go
-speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1)
+speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1)
 
 v := u.NewDerivedQuantity(60, speedUnit) // (value, unit)
 v = speedUnit.Of(60)                     // unit.Of(value) — 结果相同

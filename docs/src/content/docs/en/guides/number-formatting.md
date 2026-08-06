@@ -59,7 +59,7 @@ u.CommaFloat(1234.5, 1)  // "1,234.5"  (== DelimitFloat with comma)
 
 ## TrimDelimiter
 
-Remove common thousands separators before numeric parsing — used internally by `PrefixParse`:
+Remove common thousands separators before numeric parsing (`prefix.PrefixParse` performs equivalent stripping on its own):
 
 ```go
 u.TrimDelimiter("1,234,567") // "1234567"
@@ -72,6 +72,6 @@ Dot separators are **not** removed (they may be decimal points).
 | API | Purpose |
 |-----|---------|
 | `Format` / `DelimitFloat` | Display a quantity or fixed-precision number |
-| `PrefixFormat` | Scale values with SI/IEC prefixes (K, M, Mi, …) |
+| `prefix.PrefixFormat` | Scale values with SI/IEC prefixes (K, M, Mi, …) — package [`prefix`](numeric-prefixes/) |
 
 Next: [SI base units reference →](../reference/si-base-units/)

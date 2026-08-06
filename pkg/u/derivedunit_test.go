@@ -3,6 +3,8 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestDerivedUnitEmpty(t *testing.T) {
@@ -26,7 +28,7 @@ func TestDerivedUnitEmpty(t *testing.T) {
 }
 
 func TestDerivedUnitSymbol(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	forceUnit := NewDerivedUnit().Mass(MassUnit(Kilogram), 1).
 		Length(LengthUnit(Meter), 1).
 		Time(TimeUnit(Second), -2)
@@ -87,7 +89,7 @@ func TestDerivedUnitSymbol(t *testing.T) {
 }
 
 func TestDerivedUnitAreaPerTime(t *testing.T) {
-	u := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Centi)), 2).Time(TimeUnit(Hour), -1)
+	u := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Centi)), 2).Time(TimeUnit(Hour), -1)
 
 	sign := u.Symbol(WithExpSign(ExpSignSup))
 	if sign != "cm²·h⁻¹" {
@@ -101,7 +103,7 @@ func TestDerivedUnitAreaPerTime(t *testing.T) {
 }
 
 func TestDerived(t *testing.T) {
-	unit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Centi)), 2).Time(TimeUnit(Hour), -1)
+	unit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Centi)), 2).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(25, unit)
 
 	if speed.Value != 25 {
@@ -113,7 +115,7 @@ func TestDerived(t *testing.T) {
 }
 
 func TestDerivedUnitOf(t *testing.T) {
-	unit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	unit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := unit.Of(60)
 
 	if speed.Value != 60 {
@@ -166,10 +168,10 @@ func TestDerivedUnitNamedSymbol(t *testing.T) {
 }
 
 func TestDerivedQuantitySI(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(50, speedUnit)
 
-	si := speed.SI()
+	si := speed.Base()
 	want := 50.0 * 1000.0 / 3600.0
 	if math.Abs(si.Value-want) > 1e-12 {
 		t.Fatalf("SI value = %v, want %v", si.Value, want)

@@ -11,7 +11,9 @@ sidebar:
 操作数须具相同（导出）量纲。第二个操作数经基本单位换算到第一个的单位：
 
 ```go
-a := u.Length(1, u.Meter.Prefix(u.Kilo))
+import "github.com/bougou/go-unit/pkg/prefix"
+
+a := u.Length(1, u.Meter.Prefix(prefix.Kilo))
 b := u.Length(500, u.Meter)
 sum := a.Add(b) // 1.5 km
 ```
@@ -21,7 +23,7 @@ sum := a.Add(b) // 1.5 km
 ### 导出量
 
 ```go
-speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1)
+speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1)
 a := u.NewDerivedQuantity(60, speedUnit)
 b := speedUnit.Of(30)
 a.Add(b) // 90 km/h
@@ -34,7 +36,7 @@ a.Add(b) // 90 km/h
 **相加**导出量纲指数，**相乘**数值（含基本单位归一化）：
 
 ```go
-u.Length(2, u.Meter.Prefix(u.Kilo)).Mul(u.Length(3, u.Meter))
+u.Length(2, u.Meter.Prefix(prefix.Kilo)).Mul(u.Length(3, u.Meter))
 ```
 
 各维单位优先沿用操作数中已有单位，否则回退 SI 基本单位。
@@ -54,7 +56,7 @@ u.Mass(10, u.Kilogram).Div(u.Mass(2, u.Kilogram)) // 5, 无量纲
 ## 示例：求平均速度
 
 ```go
-trip := u.Length(120, u.Meter.Prefix(u.Kilo))
+trip := u.Length(120, u.Meter.Prefix(prefix.Kilo))
 drive := u.Time(2, u.Hour)
 avg := trip.Div(drive)           // 60 km/h
 si := avg.By(u.Speed)     // ≈16.667 m/s

@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strings"
 	"unicode"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 var (
@@ -89,11 +91,11 @@ func matchPrefixedSIStemSymbol(s string) (Unit, int, bool) {
 		// ASCII micro
 		candU := "u" + st.sym
 		if strings.HasPrefix(s, candU) {
-			return prefixedBaseUnit(st.unit, Micro), len(candU), true
+			return prefixedBaseUnit(st.unit, prefix.Micro), len(candU), true
 		}
 		candMicro := "µ" + st.sym
 		if strings.HasPrefix(s, candMicro) {
-			return prefixedBaseUnit(st.unit, Micro), len(candMicro), true
+			return prefixedBaseUnit(st.unit, prefix.Micro), len(candMicro), true
 		}
 	}
 	return "", 0, false
@@ -140,6 +142,15 @@ func DerivedUnitParse(symbol string) (*DerivedUnit, error) {
 		return nil, err
 	}
 	return interned, nil
+}
+
+// DerivedUnitMustParse parses a derived unit symbol and panics on error.
+func DerivedUnitMustParse(symbol string) *DerivedUnit {
+	u, err := DerivedUnitParse(symbol)
+	if err != nil {
+		panic(err)
+	}
+	return u
 }
 
 func parseDerivedSymbolTerms(symbol string) ([]unitTerm, error) {
@@ -535,10 +546,10 @@ func lookupPrefixedSpecialName(symbol string) (*DerivedUnit, bool) {
 	return nil, false
 }
 
-func siPrefixFactorFromSymbol(sym string) (SIPrefix, bool) {
+func siPrefixFactorFromSymbol(sym string) (prefix.SIPrefix, bool) {
 	switch sym {
 	case "u", "µ": // ASCII u and U+00B5 micro sign
-		return Micro, true
+		return prefix.Micro, true
 	}
 	for _, p := range siUnitPrefixes {
 		if p.Symbol == sym {

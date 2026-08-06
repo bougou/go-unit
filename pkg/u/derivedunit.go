@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 // unitTerm is one unit raised to an exponent in a compound unit, e.g. km¹ or h⁻¹.
@@ -59,7 +61,7 @@ func factorToBaseFromTerms(terms []unitTerm) float64 {
 //
 // Example:
 //
-//	speed := NewDerivedUnit().Length(Meter.Prefix(Kilo), 1).Time(Hour, -1)
+//	speed := NewDerivedUnit().Length(Meter.Prefix(prefix.Kilo), 1).Time(Hour, -1)
 //	speed.Symbol(WithExpSign(ExpSignSup)) // "km·h⁻¹"
 type DerivedUnit struct {
 	l unitTerm // length (L)
@@ -90,7 +92,7 @@ type DerivedUnit struct {
 //
 // Example:
 //
-//	speedUnit := NewDerivedUnit().Length(Meter.Prefix(Kilo), 1).Time(Hour, -1)
+//	speedUnit := NewDerivedUnit().Length(Meter.Prefix(prefix.Kilo), 1).Time(Hour, -1)
 func NewDerivedUnit() *DerivedUnit {
 	return &DerivedUnit{}
 }
@@ -148,7 +150,7 @@ func (u *DerivedUnit) Named(namedSymbol string) *DerivedUnit {
 
 // Scale sets a non-SI multiplier relative to the coherent composition of the terms.
 // Used for convenience units such as watt-hour (1 W·h = 3600 J). Zero/omitted means 1.
-// Prefer SI Prefix for decimal scaling of named units (kW·h = WattHour.Prefix(Kilo)).
+// Prefer SI Prefix for decimal scaling of named units (kW·h = WattHour.Prefix(prefix.Kilo)).
 //
 // Example: NewDerivedUnit().… .Named("W·h").Scale(3600)
 func (u *DerivedUnit) Scale(factor float64) *DerivedUnit {
@@ -191,10 +193,10 @@ func (u *DerivedUnit) effectiveUnitScale() float64 {
 //
 // Example:
 //
-//	Ohm.Prefix(Mega)   // MΩ, FactorToBase = 1e6
-//	Ohm.Prefix(Micro)  // μΩ
-//	Ohm.Prefix(Mega).Prefix(Micro) // Ω again (factors cancel)
-func (u *DerivedUnit) Prefix(factor SIPrefix) *DerivedUnit {
+//	Ohm.Prefix(prefix.Mega)   // MΩ, FactorToBase = 1e6
+//	Ohm.Prefix(prefix.Micro)  // μΩ
+//	Ohm.Prefix(prefix.Mega).Prefix(prefix.Micro) // Ω again (factors cancel)
+func (u *DerivedUnit) Prefix(factor prefix.SIPrefix) *DerivedUnit {
 	if u == nil {
 		panic("Prefix on nil DerivedUnit")
 	}
@@ -206,7 +208,7 @@ func (u *DerivedUnit) Prefix(factor SIPrefix) *DerivedUnit {
 	}
 	mustSIPrefixByFactor(factor)
 
-	scale := SIPrefix(u.effectivePrefixScale() * float64(factor))
+	scale := prefix.SIPrefix(u.effectivePrefixScale() * float64(factor))
 	mustSIPrefixByFactor(scale)
 
 	if scale == 1 {
@@ -354,10 +356,10 @@ func (u *DerivedUnit) FactorToBase() float64 {
 	return factorToBaseFromTerms(u.terms()) * u.effectiveUnitScale() * u.effectivePrefixScale()
 }
 
-// SI returns an equivalent unit expressed with SI base units for each dimension.
+// Base returns an equivalent unit expressed with SI base units for each dimension.
 //
 // Example: km/h → m·s⁻¹
-func (u *DerivedUnit) SI() *DerivedUnit {
+func (u *DerivedUnit) Base() *DerivedUnit {
 	if u == nil {
 		return nil
 	}
@@ -872,7 +874,7 @@ func applyFormatOptions(options ...FormatOption) formatOption {
 //
 //	Newton.Symbol()                                      // "N"
 //	Newton.Symbol(WithCompoundSymbol(true))              // "kg·m·s^-2"
-//	Newton.Prefix(Kilo).Symbol(WithCompoundSymbol(true)) // "k(kg·m·s^-2)"
+//	Newton.Prefix(prefix.Kilo).Symbol(WithCompoundSymbol(true)) // "k(kg·m·s^-2)"
 //	Newton.Symbol(WithCompoundSymbol(true), WithExpSign(ExpSignSup)) // "kg·m·s⁻²"
 //	Newton.Symbol(WithCompoundSymbol(true), WithDivSign(DivSignSlash)) // "kg·m/s^2"
 func (u *DerivedUnit) Symbol(options ...FormatOption) string {
@@ -891,7 +893,7 @@ func (u *DerivedUnit) symbolWith(opt formatOption) string {
 	if scale == 1 || compound == "" {
 		return compound
 	}
-	prefix, ok := siPrefixDisplaySymbol(SIPrefix(scale))
+	prefix, ok := siPrefixDisplaySymbol(prefix.SIPrefix(scale))
 	if !ok {
 		return compound
 	}
@@ -913,7 +915,7 @@ func (u *DerivedUnit) displayNamedSymbol() string {
 	if u == nil || u.namedSymbol == "" {
 		return ""
 	}
-	prefix, ok := siPrefixDisplaySymbol(SIPrefix(u.effectivePrefixScale()))
+	prefix, ok := siPrefixDisplaySymbol(prefix.SIPrefix(u.effectivePrefixScale()))
 	if !ok {
 		return u.namedSymbol
 	}

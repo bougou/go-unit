@@ -15,7 +15,9 @@ Unit and dimension symbols are rendered on demand via `Symbol()` methods and `Fo
 | Derived dimension | Single-letter exponents |
 
 ```go
-u.Unit(u.Meter.Prefix(u.Kilo)).Symbol() // "km"
+import "github.com/bougou/go-unit/pkg/prefix"
+
+u.Unit(u.Meter.Prefix(prefix.Kilo)).Symbol() // "km"
 u.Newton.Symbol()                       // "N"
 u.Newton.NamedSymbol()                  // "N" (without SI prefix on the unit)
 u.Newton.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
@@ -69,7 +71,7 @@ Order of dimension letters in **dimension** symbols (not unit symbols):
 ## Examples
 
 ```go
-speed := u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1)
+speed := u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1)
 
 speed.Symbol() // "km·h^-1"
 

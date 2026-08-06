@@ -22,15 +22,17 @@ sidebar:
 
 ## 基本用法
 
-两种等价构造方式——包级函数 `(value, unit)` 或单位方法 `Of(value)`：
+两种等价构造方式——包级函数 `(value, unit)` 或单位方法 `Of(value)`。`prefix.Kilo` 等 SI 十进制因子来自 `github.com/bougou/go-unit/pkg/prefix`：
 
 ```go
-d := u.Length(42, u.Meter.Prefix(u.Kilo))
+import "github.com/bougou/go-unit/pkg/prefix"
+
+d := u.Length(42, u.Meter.Prefix(prefix.Kilo))
 // 等价于：
-d = u.Meter.Prefix(u.Kilo).Of(42)
+d = u.Meter.Prefix(prefix.Kilo).Of(42)
 
 base := d.Base()           // 42000 m
-km := base.By(u.Meter.Prefix(u.Kilo)) // 42 km
+km := base.By(u.Meter.Prefix(prefix.Kilo)) // 42 km
 ```
 
 SI 导出单位同样有一对：`NewDerivedQuantity(220, u.Volt)` 与 `u.Volt.Of(220)`。详见 [物理量 — 构造](../concepts/quantities/#construction)。
@@ -64,7 +66,7 @@ diff := a.Sub(b) // 5 m
 `Mul` / `Div` 接受任意 `derivedQuantity`，返回 `DerivedQuantity`：
 
 ```go
-speed := u.Length(10, u.Meter.Prefix(u.Kilo)).Div(u.Time(2, u.Hour))
+speed := u.Length(10, u.Meter.Prefix(prefix.Kilo)).Div(u.Time(2, u.Hour))
 area := u.Length(3, u.Meter).Mul(u.Length(4, u.Meter))
 ```
 

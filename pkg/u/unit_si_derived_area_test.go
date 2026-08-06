@@ -3,6 +3,8 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestAreaDerivedDimensions(t *testing.T) {
@@ -113,8 +115,8 @@ func TestAreaConversions(t *testing.T) {
 	}
 
 	// Prefix on m² is not km² (would be 10³, not 10⁶).
-	if SquareMeter.Prefix(Kilo).FactorToBase() == SquareKilometer.FactorToBase() {
-		t.Fatal("SquareMeter.Prefix(Kilo) must not equal SquareKilometer")
+	if SquareMeter.Prefix(prefix.Kilo).FactorToBase() == SquareKilometer.FactorToBase() {
+		t.Fatal("SquareMeter.Prefix(prefix.Kilo) must not equal SquareKilometer")
 	}
 }
 

@@ -8,10 +8,12 @@ A **unit** is the concrete measure attached to a dimension. `go-unit` registers 
 
 ## Unit identity
 
-`Unit` is a string type — the stable internal identifier:
+`Unit` is a string type — the stable internal identifier. SI decimal factors come from package `prefix`:
 
 ```go
-km := u.Unit(u.Meter.Prefix(u.Kilo))
+import "github.com/bougou/go-unit/pkg/prefix"
+
+km := u.Unit(u.Meter.Prefix(prefix.Kilo))
 fmt.Println(km.Symbol()) // "km"
 ```
 
@@ -64,8 +66,8 @@ base := q.Base()                    // 3600 s
 back := base.By(u.Hour)          // 1 h
 
 // Low-level on Unit
-val, ok := u.Unit(u.Meter.Prefix(u.Kilo)).ToBase(2.5)   // 2500
-back, ok := u.Unit(u.Meter.Prefix(u.Kilo)).FromBase(2500) // 2.5
+val, ok := u.Unit(u.Meter.Prefix(prefix.Kilo)).ToBase(2.5)   // 2500
+back, ok := u.Unit(u.Meter.Prefix(prefix.Kilo)).FromBase(2500) // 2.5
 ```
 
 `Def()` returns the full definition when the unit is registered:
@@ -90,7 +92,7 @@ See [SI base units](../reference/si-base-units/) for the full list.
 
 | Kind | Example | Lookup |
 |------|---------|--------|
-| Registered base unit | `Meter.Prefix(Kilo)` | `Unit.Def()` |
+| Registered base unit | `Meter.Prefix(prefix.Kilo)` | `Unit.Def()` |
 | Derived compound unit | km/h, N | `Unit.DerivedUnit()` after `Intern` |
 
 Compound units are covered in [Derived units](derived-units/).

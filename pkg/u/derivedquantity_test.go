@@ -3,10 +3,12 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestUnitsProportional(t *testing.T) {
-	if !unitsProportional(Unit(Meter.Prefix(Kilo)), Unit(Meter)) {
+	if !unitsProportional(Unit(Meter.Prefix(prefix.Kilo)), Unit(Meter)) {
 		t.Fatal("km and m should be proportional")
 	}
 	if unitsProportional(Unit(Celsius), Unit(Kelvin)) {
@@ -18,10 +20,10 @@ func TestUnitsProportional(t *testing.T) {
 }
 
 func TestDerivedQuantityBy(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
-	siUnit := speedUnit.SI()
+	siUnit := speedUnit.Base()
 	got := speed.By(siUnit)
 	want := 60.0 * 1000.0 / 3600.0
 	if math.Abs(got.Value-want) > 1e-12 {
@@ -53,7 +55,7 @@ func TestDerivedQuantityByAffineTemperature(t *testing.T) {
 }
 
 func TestDerivedQuantityByLength(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
 	got := speed.ByLength(Meter)
@@ -69,7 +71,7 @@ func TestDerivedQuantityByLength(t *testing.T) {
 }
 
 func TestDerivedQuantityByTime(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
 	got := speed.ByTime(Second)
@@ -83,7 +85,7 @@ func TestDerivedQuantityByTime(t *testing.T) {
 }
 
 func TestDerivedQuantityByNoOpChaining(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	speed := NewDerivedQuantity(60, speedUnit)
 
 	affineUnit := NewDerivedUnit().
@@ -96,7 +98,7 @@ func TestDerivedQuantityByNoOpChaining(t *testing.T) {
 		t.Fatalf("chaining after no-op ByTemperature = %+v, want value 20 unchanged unit", got)
 	}
 
-	got = speed.ByLength(Meter).ByTime(Second).SI()
+	got = speed.ByLength(Meter).ByTime(Second).Base()
 	if math.Abs(got.Value-16.666666666666668) > 1e-12 {
 		t.Fatalf("chaining proportional conversions then SI = %v", got.Value)
 	}

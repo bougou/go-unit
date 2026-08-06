@@ -8,10 +8,12 @@ sidebar:
 
 ## 单位标识
 
-`Unit` 为字符串类型，作为稳定的内部标识：
+`Unit` 为字符串类型，作为稳定的内部标识。SI 十进制因子来自包 `prefix`：
 
 ```go
-km := u.Unit(u.Meter.Prefix(u.Kilo))
+import "github.com/bougou/go-unit/pkg/prefix"
+
+km := u.Unit(u.Meter.Prefix(prefix.Kilo))
 fmt.Println(km.Symbol()) // "km"
 ```
 
@@ -62,8 +64,8 @@ q := u.Length(1, u.Hour)
 base := q.Base()           // 3600 s
 back := base.By(u.Hour) // 1 h
 
-val, ok := u.Unit(u.Meter.Prefix(u.Kilo)).ToBase(2.5)    // 2500
-back, ok := u.Unit(u.Meter.Prefix(u.Kilo)).FromBase(2500) // 2.5
+val, ok := u.Unit(u.Meter.Prefix(prefix.Kilo)).ToBase(2.5)    // 2500
+back, ok := u.Unit(u.Meter.Prefix(prefix.Kilo)).FromBase(2500) // 2.5
 ```
 
 `Def()` 返回完整定义：
@@ -88,7 +90,7 @@ def, ok := u.Unit(u.Celsius).Def()
 
 | 种类 | 示例 | 查询 |
 |------|------|------|
-| 注册基本量纲单位 | `Meter.Prefix(Kilo)` | `Unit.Def()` |
+| 注册基本量纲单位 | `Meter.Prefix(prefix.Kilo)` | `Unit.Def()` |
 | 导出组合单位 | km/h、N | `Intern` 后 `Unit.DerivedUnit()` |
 
 组合单位见 [导出单位](derived-units/)。

@@ -3,13 +3,15 @@ package u
 import (
 	"fmt"
 	"math"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 // DerivedQuantity (导出量) is a numeric value with a compound derived unit.
 //
 // Example:
 //
-//	unit := NewDerivedUnit().Length(Meter.Prefix(Kilo), 1).Time(Hour, -1)
+//	unit := NewDerivedUnit().Length(Meter.Prefix(prefix.Kilo), 1).Time(Hour, -1)
 //	speed := NewDerivedQuantity(60, unit) // 60 km/h
 type DerivedQuantity struct {
 	// Value is the numeric magnitude in Unit.
@@ -84,11 +86,11 @@ func (q DerivedQuantity) formatWith(opt formatOption) string {
 	return joinQuantityString(value, q.Unit.symbolWith(opt))
 }
 
-// SI converts the quantity to SI base units for each dimension.
-func (q DerivedQuantity) SI() DerivedQuantity {
+// Base converts the quantity to SI base units for each dimension.
+func (q DerivedQuantity) Base() DerivedQuantity {
 	return DerivedQuantity{
 		Value: q.Value * mustFactorToBase(q.Unit),
-		Unit:  q.Unit.SI(),
+		Unit:  q.Unit.Base(),
 	}
 }
 
@@ -127,15 +129,15 @@ func (q DerivedQuantity) TryBy(target *DerivedUnit) (DerivedQuantity, error) {
 // Sqrt of ampere-squared). Multi-term unnamed units and nil are unchanged.
 // Prefer TryPrefix when errors must be observed.
 //
-// Example: Ohm.Of(2e6).Prefix(Mega) // 2 MΩ
-// Example: Watt.Of(P).Div(Ohm.Of(R)).Sqrt().Prefix(Milli) // current in mA
-func (q DerivedQuantity) Prefix(factor SIPrefix) DerivedQuantity {
+// Example: Ohm.Of(2e6).Prefix(prefix.Mega) // 2 MΩ
+// Example: Watt.Of(P).Div(Ohm.Of(R)).Sqrt().Prefix(prefix.Milli) // current in mA
+func (q DerivedQuantity) Prefix(factor prefix.SIPrefix) DerivedQuantity {
 	r, _ := q.TryPrefix(factor)
 	return r
 }
 
 // TryPrefix converts q to the same unit scaled by an SI decimal prefix.
-func (q DerivedQuantity) TryPrefix(factor SIPrefix) (DerivedQuantity, error) {
+func (q DerivedQuantity) TryPrefix(factor prefix.SIPrefix) (DerivedQuantity, error) {
 	if q.Unit == nil {
 		return q, fmt.Errorf("prefix: %w", ErrInvalidUnit)
 	}
@@ -158,7 +160,7 @@ func (q DerivedQuantity) TryPrefix(factor SIPrefix) (DerivedQuantity, error) {
 }
 
 // prefixBaseDimensionUnit applies an SI prefix to a single base-dimension unit.
-func prefixBaseDimensionUnit(unit Unit, dim Dimension, factor SIPrefix) (Unit, bool) {
+func prefixBaseDimensionUnit(unit Unit, dim Dimension, factor prefix.SIPrefix) (Unit, bool) {
 	switch dim {
 	case DimLength:
 		return Unit(LengthUnit(unit).Prefix(factor)), true

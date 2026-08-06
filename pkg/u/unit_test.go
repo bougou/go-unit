@@ -1,6 +1,10 @@
 package u
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
+)
 
 func TestValidateRegistry(t *testing.T) {
 	if err := validateRegistry(); err != nil {
@@ -24,7 +28,7 @@ func TestUnitSymbol(t *testing.T) {
 		want string
 	}{
 		{Unit(Meter), "m"},
-		{Unit(Meter.Prefix(Kilo)), "km"},
+		{Unit(Meter.Prefix(prefix.Kilo)), "km"},
 		{Unit(Hour), "h"},
 		{Unit(Kelvin), "K"},
 		{Unit(Celsius), "°C"},

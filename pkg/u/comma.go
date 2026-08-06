@@ -53,7 +53,7 @@ func DelimitInt(n int64, delimiter NumberDelimiter) string {
 }
 
 // TrimDelimiter removes common thousands separators from s.
-// Used by PrefixParse before parsing the numeric part.
+// Used by QuantityParse (and by prefix.PrefixParse in package prefix) before parsing the numeric part.
 // Dot separators are intentionally not removed because they may be decimal points.
 func TrimDelimiter(s string) string {
 	out := strings.ReplaceAll(s, string(NumberDelimiterComma), "")

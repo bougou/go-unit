@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 var (
@@ -15,62 +17,62 @@ var (
 
 // Prefix returns this length unit scaled by an SI decimal prefix factor.
 //
-// Example: Meter.Prefix(Kilo) // km
-func (u LengthUnit) Prefix(factor SIPrefix) LengthUnit {
+// Example: Meter.Prefix(prefix.Kilo) // km
+func (u LengthUnit) Prefix(factor prefix.SIPrefix) LengthUnit {
 	return LengthUnit(prefixedBaseUnit(Unit(u), factor))
 }
 
 // Prefix returns this mass unit scaled by an SI decimal prefix factor.
 //
-// Prefixes attach to Gram (Gram.Prefix(Milli) → mg, Gram.Prefix(Kilo) → Kilogram).
-// Kilogram.Prefix(Milli) → Gram is the only Kilogram.Prefix shortcut; other factors panic.
+// Prefixes attach to Gram (Gram.Prefix(prefix.Milli) → mg, Gram.Prefix(prefix.Kilo) → Kilogram).
+// Kilogram.Prefix(prefix.Milli) → Gram is the only Kilogram.Prefix shortcut; other factors panic.
 //
-// Example: Gram.Prefix(Milli) // mg
-func (u MassUnit) Prefix(factor SIPrefix) MassUnit {
-	if factor != One && factor != 1 && u == Kilogram && factor != Milli {
-		panic("mass SI prefixes attach to Gram; use Gram.Prefix(...), or Kilogram.Prefix(Milli) for Gram")
+// Example: Gram.Prefix(prefix.Milli) // mg
+func (u MassUnit) Prefix(factor prefix.SIPrefix) MassUnit {
+	if factor != prefix.One && factor != 1 && u == Kilogram && factor != prefix.Milli {
+		panic("mass SI prefixes attach to Gram; use Gram.Prefix(...), or Kilogram.Prefix(prefix.Milli) for Gram")
 	}
 	return MassUnit(prefixedBaseUnit(Unit(u), factor))
 }
 
 // Prefix returns this time unit scaled by an SI decimal prefix factor.
 //
-// Example: Second.Prefix(Milli) // ms
-func (u TimeUnit) Prefix(factor SIPrefix) TimeUnit {
+// Example: Second.Prefix(prefix.Milli) // ms
+func (u TimeUnit) Prefix(factor prefix.SIPrefix) TimeUnit {
 	return TimeUnit(prefixedBaseUnit(Unit(u), factor))
 }
 
 // Prefix returns this current unit scaled by an SI decimal prefix factor.
 //
-// Example: Ampere.Prefix(Micro) // μA
-func (u CurrentUnit) Prefix(factor SIPrefix) CurrentUnit {
+// Example: Ampere.Prefix(prefix.Micro) // μA
+func (u CurrentUnit) Prefix(factor prefix.SIPrefix) CurrentUnit {
 	return CurrentUnit(prefixedBaseUnit(Unit(u), factor))
 }
 
 // Prefix returns this temperature unit scaled by an SI decimal prefix factor.
 // Affine units (°C, °F) are rejected.
 //
-// Example: Kelvin.Prefix(Milli) // mK
-func (u TemperatureUnit) Prefix(factor SIPrefix) TemperatureUnit {
+// Example: Kelvin.Prefix(prefix.Milli) // mK
+func (u TemperatureUnit) Prefix(factor prefix.SIPrefix) TemperatureUnit {
 	return TemperatureUnit(prefixedBaseUnit(Unit(u), factor))
 }
 
 // Prefix returns this amount unit scaled by an SI decimal prefix factor.
 //
-// Example: Mole.Prefix(Milli) // mmol
-func (u AmountUnit) Prefix(factor SIPrefix) AmountUnit {
+// Example: Mole.Prefix(prefix.Milli) // mmol
+func (u AmountUnit) Prefix(factor prefix.SIPrefix) AmountUnit {
 	return AmountUnit(prefixedBaseUnit(Unit(u), factor))
 }
 
 // Prefix returns this luminous unit scaled by an SI decimal prefix factor.
 //
-// Example: Candela.Prefix(Milli) // mcd
-func (u LuminousUnit) Prefix(factor SIPrefix) LuminousUnit {
+// Example: Candela.Prefix(prefix.Milli) // mcd
+func (u LuminousUnit) Prefix(factor prefix.SIPrefix) LuminousUnit {
 	return LuminousUnit(prefixedBaseUnit(Unit(u), factor))
 }
 
-func prefixedBaseUnit(anchor Unit, factor SIPrefix) Unit {
-	if factor == One || factor == 1 {
+func prefixedBaseUnit(anchor Unit, factor prefix.SIPrefix) Unit {
+	if factor == prefix.One || factor == 1 {
 		return anchor
 	}
 	adef, ok := anchor.Def()
@@ -115,22 +117,22 @@ func prefixedBaseUnit(anchor Unit, factor SIPrefix) Unit {
 }
 
 func massPrefixedName(scaleInKg float64) string {
-	gramRelative := SIPrefix(scaleInKg / float64(Milli))
-	if gramRelative == One || gramRelative == 1 {
+	gramRelative := prefix.SIPrefix(scaleInKg / float64(prefix.Milli))
+	if gramRelative == prefix.One || gramRelative == 1 {
 		return "gram"
 	}
-	if gramRelative == Kilo {
+	if gramRelative == prefix.Kilo {
 		return "kilogram"
 	}
 	p := mustSIPrefixByFactor(gramRelative)
 	return p.Name + "gram"
 }
 
-func prefixedBaseSymbol(adef unitDef, factor SIPrefix) string {
+func prefixedBaseSymbol(adef unitDef, factor prefix.SIPrefix) string {
 	targetScale := adef.Scale * float64(factor)
 	if adef.Dimension == DimMass {
-		gramRelative := SIPrefix(targetScale / float64(Milli))
-		if gramRelative == One || gramRelative == 1 {
+		gramRelative := prefix.SIPrefix(targetScale / float64(prefix.Milli))
+		if gramRelative == prefix.One || gramRelative == 1 {
 			return "g"
 		}
 		p, ok := siPrefixDisplaySymbol(gramRelative)
@@ -145,8 +147,8 @@ func prefixedBaseSymbol(adef unitDef, factor SIPrefix) string {
 	if !ok {
 		panic(fmt.Sprintf("missing base unit for dimension %s", adef.Dimension))
 	}
-	relative := SIPrefix(targetScale / baseDef.Scale)
-	if relative == One || relative == 1 {
+	relative := prefix.SIPrefix(targetScale / baseDef.Scale)
+	if relative == prefix.One || relative == 1 {
 		return baseDef.Symbol
 	}
 	p, ok := siPrefixDisplaySymbol(relative)

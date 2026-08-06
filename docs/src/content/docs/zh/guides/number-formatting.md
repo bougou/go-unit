@@ -51,13 +51,13 @@ u.DelimitFloat(1234.5, 1, u.NumberDelimiterComma)  // "1,234.5"
 
 ## TrimDelimiter
 
-去掉常见千分位符，`PrefixParse` 内部使用。不删除 `.`（可能是小数点）。
+去掉常见千分位符（`prefix.PrefixParse` 也会自行做同类剥离）。不删除 `.`（可能是小数点）。
 
 ## 与词头格式化的关系
 
 | API | 用途 |
 |-----|------|
 | `Format` / `DelimitFloat` | 量或固定小数位展示 |
-| `PrefixFormat` | SI/IEC 词头缩放 |
+| `prefix.PrefixFormat` | SI/IEC 词头缩放 — 见包 [`prefix`](numeric-prefixes/) |
 
 下一步：[SI 基本单位参考 →](../reference/si-base-units/)

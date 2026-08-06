@@ -8,11 +8,13 @@ A **derived unit** expresses a compound measurement as base units raised to expo
 
 ## Building derived units
 
-Use `NewDerivedUnit()` and chain dimension setters:
+Use `NewDerivedUnit()` and chain dimension setters. SI decimal factors such as `prefix.Kilo` come from `github.com/bougou/go-unit/pkg/prefix`:
 
 ```go
+import "github.com/bougou/go-unit/pkg/prefix"
+
 speed := u.NewDerivedUnit().
-    Length(u.Meter.Prefix(u.Kilo), 1).
+    Length(u.Meter.Prefix(prefix.Kilo), 1).
     Time(u.Hour, -1)
 
 force := u.NewDerivedUnit().
@@ -49,15 +51,17 @@ Pre-registered globals in `unit_si_derived.go` include `Newton`, `Pascal`, `Hert
 
 ### Prefix() — SI prefixes on special names
 
-Named derived units support `Prefix()` to scale by an SI decimal factor. The result is an interned `*DerivedUnit`:
+Named derived units support `Prefix()` to scale by an SI decimal factor from package `prefix`. The result is an interned `*DerivedUnit`:
 
 ```go
-u.Ohm.Prefix(u.Mega)   // MΩ
-u.Newton.Prefix(u.Kilo) // kN
-u.Ohm.Prefix(u.Mega).Prefix(u.Micro) // Ohm again (factors cancel)
+import "github.com/bougou/go-unit/pkg/prefix"
+
+u.Ohm.Prefix(prefix.Mega)   // MΩ
+u.Newton.Prefix(prefix.Kilo) // kN
+u.Ohm.Prefix(prefix.Mega).Prefix(prefix.Micro) // Ohm again (factors cancel)
 ```
 
-`FactorToBase` includes the prefix factor; `By` converts between `Ohm` and `Ohm.Prefix(Mega)`. Parsing accepts forms such as `"1 MΩ"` and `"2 kN"`.
+`FactorToBase` includes the prefix factor; `By` converts between `Ohm` and `Ohm.Prefix(prefix.Mega)`. Parsing accepts forms such as `"1 MΩ"` and `"2 kN"`.
 
 ## Inspecting a derived unit
 
@@ -72,12 +76,12 @@ force.NamedSymbol()   // "N" (stored name only, no SI prefix)
 force.Symbol(u.WithCompoundSymbol(true)) // "kg·m·s^-2"
 ```
 
-### SI()
+### Base()
 
 Rewrite using SI base units per dimension:
 
 ```go
-u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1).SI()
+u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1).Base()
 // → m¹·s⁻¹
 ```
 
@@ -86,7 +90,7 @@ u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1).SI()
 Attach a value with either form — they are equivalent — or get one from `Mul` / `Div` on typed quantities:
 
 ```go
-speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1)
+speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1)
 
 v := u.NewDerivedQuantity(60, speedUnit) // (value, unit)
 v = speedUnit.Of(60)                     // unit.Of(value) — same result

@@ -65,7 +65,7 @@ func (q Quantity) TrySub(other Quantity) (Quantity, error) {
 // Multiplying quantities adds their derived dimensions.
 // On failure, returns a zero or unchanged-style result. Prefer TryMul when errors must be observed.
 //
-// Example: Length(2, Meter.Prefix(Kilo)).Mul(Length(3, Meter)) // 6 km·m → area unit km²
+// Example: Length(2, Meter.Prefix(prefix.Kilo)).Mul(Length(3, Meter)) // 6 km·m → area unit km²
 func (q Quantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
@@ -79,7 +79,7 @@ func (q Quantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
 // Same-dimension division yields a dimensionless quantity (NoneUnit).
 // On failure, returns q unchanged as a derived quantity. Prefer TryDiv when errors must be observed.
 //
-// Example: Length(10, Meter.Prefix(Kilo)).Div(Time(2, Hour)) // 5 km/h
+// Example: Length(10, Meter.Prefix(prefix.Kilo)).Div(Time(2, Hour)) // 5 km/h
 func (q Quantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
 }

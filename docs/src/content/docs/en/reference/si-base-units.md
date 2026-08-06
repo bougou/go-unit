@@ -4,13 +4,13 @@ description: "SI base units"
 sidebar:
   order: 1
 ---
-Constants are defined in `pkg/u/unit_si.go`. Each dimension exports **anchors** and non-SI units only. SI decimal multiples use `Anchor.Prefix(prefix)` (lazy registration).
+Constants are defined in `pkg/u/unit_si.go`. Each dimension exports **anchors** and non-SI units only. SI decimal multiples use `Anchor.Prefix(factor)` with factors from package [`prefix`](../guides/numeric-prefixes/) (lazy registration).
 
 ## Length (`LengthUnit`) — base: meter
 
 | Category | Constants / forms |
 |----------|-------------------|
-| SI anchor | `Meter`; prefixes via `Meter.Prefix(Kilo)` → km |
+| SI anchor | `Meter`; prefixes via `Meter.Prefix(prefix.Kilo)` → km |
 | Scientific | `Angstrom`, `AstronomicalUnit`, `LightYear`, `Parsec` |
 | Imperial/US | `Inch`, `Foot`, `Yard`, `Mile`, `Mil`, `Hand`, `Fathom`, `Cable`, `NauticalMile`, `Chain`, `Furlong`, `Rod`, `League` |
 | Typography | `Point`, `Pica` |
@@ -21,7 +21,7 @@ Constants are defined in `pkg/u/unit_si.go`. Each dimension exports **anchors** 
 | Category | Constants / forms |
 |----------|-------------------|
 | SI | `Kilogram` (base), `Gram` (prefix root) |
-| Prefixes | Attach to gram: `Gram.Prefix(Milli)` → mg; `Gram.Prefix(Kilo)` → `Kilogram`; `Kilogram.Prefix(Milli)` → `Gram` |
+| Prefixes | Attach to gram: `Gram.Prefix(prefix.Milli)` → mg; `Gram.Prefix(prefix.Kilo)` → `Kilogram`; `Kilogram.Prefix(prefix.Milli)` → `Gram` |
 | Other | `Tonne`, imperial/troy, carat/dalton, jin/liang, … |
 
 ## Time (`TimeUnit`) — base: second
@@ -50,8 +50,8 @@ Constants are defined in `pkg/u/unit_si.go`. Each dimension exports **anchors** 
 ## Symbols
 
 ```go
-u.Unit(u.Meter.Prefix(u.Kilo)).Symbol() // "km"
-u.Unit(u.Gram.Prefix(u.Milli)).Symbol() // "mg"
+u.Unit(u.Meter.Prefix(prefix.Kilo)).Symbol() // "km"
+u.Unit(u.Gram.Prefix(prefix.Milli)).Symbol() // "mg"
 u.Unit(u.Celsius).Symbol()         // "°C"
 ```
 

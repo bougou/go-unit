@@ -1,4 +1,4 @@
-package u
+package prefix
 
 import (
 	"fmt"
@@ -51,7 +51,7 @@ func PrefixParse(s string, mode PrefixMode) (val float64, err error) {
 		prefix = ""
 	}
 	number = strings.TrimSpace(number)
-	number = TrimDelimiter(number)
+	number = trimNumericDelimiters(number)
 
 	var symbol rune
 
@@ -89,4 +89,12 @@ func PrefixParse(s string, mode PrefixMode) (val float64, err error) {
 
 	return val * scale, nil
 
+}
+
+func trimNumericDelimiters(s string) string {
+	out := strings.ReplaceAll(s, ",", "")
+	out = strings.ReplaceAll(out, "_", "")
+	out = strings.ReplaceAll(out, " ", "")
+	out = strings.ReplaceAll(out, "\u2009", "") // thin space
+	return out
 }

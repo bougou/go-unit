@@ -3,6 +3,8 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestQuantityParse(t *testing.T) {
@@ -13,12 +15,12 @@ func TestQuantityParse(t *testing.T) {
 	}{
 		{"10 m", 10, Unit(Meter)},
 		{"10m", 10, Unit(Meter)},
-		{"  1.5  km  ", 1.5, Unit(Meter.Prefix(Kilo))},
+		{"  1.5  km  ", 1.5, Unit(Meter.Prefix(prefix.Kilo))},
 		{"100 kg", 100, Unit(Kilogram)},
 		{"-5 °C", -5, Unit(Celsius)},
 		{"+3.2 s", 3.2, Unit(Second)},
-		{"1,024 mm", 1024, Unit(Meter.Prefix(Milli))},
-		{"1_024 mm", 1024, Unit(Meter.Prefix(Milli))},
+		{"1,024 mm", 1024, Unit(Meter.Prefix(prefix.Milli))},
+		{"1_024 mm", 1024, Unit(Meter.Prefix(prefix.Milli))},
 		{"10 oz t", 10, Unit(TroyOunce)},
 		{"5 N", 5, Unit(Newton.Key())},
 		{"5 kg·m·s^-2", 5, Unit(Newton.Key())},

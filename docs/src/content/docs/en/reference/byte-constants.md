@@ -5,7 +5,11 @@ sidebar:
   order: 3
 ---
 
-`byte_consts.go` exports named scale factors for byte multiples. These are **numeric constants**, not dimensional quantities.
+Package **`prefix`** (`pkg/prefix/byte_consts.go`) exports named scale factors for byte multiples. These are **numeric constants**, not dimensional quantities.
+
+```go
+import "github.com/bougou/go-unit/pkg/prefix"
+```
 
 ## Decimal (SI-style, base 1000)
 
@@ -33,14 +37,14 @@ sidebar:
 ## Example
 
 ```go
-size := 512 * u.MiB
-fmt.Println(u.PrefixFormat(float64(size), u.IEC)) // "512 Mi"
+size := 512 * prefix.MiB
+fmt.Println(prefix.PrefixFormat(float64(size), prefix.IEC)) // "512 Mi"
 ```
 
 For parsing user input like `"1.5 GiB"`, strip the `B` suffix and use `PrefixParse` with IEC mode:
 
 ```go
-v, _ := u.PrefixParse("1.5Gi", u.IEC)
+v, _ := prefix.PrefixParse("1.5Gi", prefix.IEC)
 bytes := v // bytes as float64
 ```
 

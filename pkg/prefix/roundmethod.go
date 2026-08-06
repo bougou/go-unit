@@ -1,4 +1,4 @@
-package u
+package prefix
 
 // RoundMethod selects how PrefixFormat rounds fractional values.
 type RoundMethod int

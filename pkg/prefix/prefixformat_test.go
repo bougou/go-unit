@@ -1,4 +1,4 @@
-package u
+package prefix
 
 import (
 	"testing"

@@ -3,6 +3,8 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestElectricalDerivedDimensions(t *testing.T) {
@@ -63,9 +65,9 @@ func TestElectricalNamedSymbols(t *testing.T) {
 		{Permeability, "H/m"},
 		{MagneticFieldStrength, "A/m"},
 		{Reluctance, "H^-1"},
-		{ElectricField.Prefix(Kilo), "kV/m"},
-		{Resistivity.Prefix(Milli), "mΩ·m"},
-		{AmpereHour.Prefix(Kilo), "kA·h"},
+		{ElectricField.Prefix(prefix.Kilo), "kV/m"},
+		{Resistivity.Prefix(prefix.Milli), "mΩ·m"},
+		{AmpereHour.Prefix(prefix.Kilo), "kA·h"},
 	}
 	for _, tc := range cases {
 		if got := tc.unit.Symbol(); got != tc.want {

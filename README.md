@@ -14,7 +14,7 @@
 - **Typed quantities** — `LengthQuantity`, `TimeQuantity`, … for compile-time dimension checks
 - **Affine conversion** — ratio units (km → m) and offset units (°C → K)
 - **Symbol formatting** — configurable compound symbols (`km·h⁻¹`, `km/h`, `N`) via `FormatOption`
-- **Numeric prefixes** — SI (1000) and IEC (1024) parse/format helpers, separate from physical units
+- **Numeric prefixes** — SI (1000) and IEC (1024) parse/format helpers in `pkg/prefix`, separate from physical units
 - **String parsing** — `QuantityParse`, typed `XxxQuantityParse`, and `DerivedQuantityParse`
 - **Number formatting** — quantity `Format`, plus `DelimitInt` / `DelimitFloat` / `CommaFloat`
 
@@ -24,7 +24,7 @@
 go get github.com/bougou/go-unit/pkg/u
 ```
 
-Requires Go 1.20 or later.
+Requires Go 1.20 or later. Numeric prefix APIs live in the same module under `pkg/prefix` (imported as needed; one `go get` of the module is enough).
 
 ## Quick start
 
@@ -34,20 +34,21 @@ package main
 import (
 	"fmt"
 
+	"github.com/bougou/go-unit/pkg/prefix"
 	u "github.com/bougou/go-unit/pkg/u"
 )
 
 func main() {
 	// Typed quantities with compile-time dimension safety
-	d := u.Length(10, u.Meter.Prefix(u.Kilo))
+	d := u.Length(10, u.Meter.Prefix(prefix.Kilo))
 	t := u.Time(2, u.Hour)
 	speed := d.Div(t) // DerivedQuantity: 5 km/h
 	fmt.Println(speed.String())
 
 	// Unit conversion within the same dimension
-	fmt.Println(u.Length(1000, u.Meter).By(u.Meter.Prefix(u.Kilo))) // 1 km
-	fmt.Println(u.Length(1000, u.Meter).Prefix(u.Kilo))           // 1 km (equivalent)
-	fmt.Println(u.Ohm.Of(2e6).Prefix(u.Mega).Format()) // 2 MΩ
+	fmt.Println(u.Length(1000, u.Meter).By(u.Meter.Prefix(prefix.Kilo))) // 1 km
+	fmt.Println(u.Length(1000, u.Meter).Prefix(prefix.Kilo))             // 1 km (equivalent)
+	fmt.Println(u.Ohm.Of(2e6).Prefix(prefix.Mega).Format())              // 2 MΩ
 
 	// SI special name vs compound symbol
 	fmt.Println(u.Newton.Symbol()) // N
@@ -58,10 +59,10 @@ func main() {
 	force, _ := u.DerivedQuantityParse("5 N")
 	fmt.Println(d, force)
 
-	// Numeric prefix helpers (not physical units)
-	v, _ := u.PrefixParse("1.5G", u.SI)
+	// Numeric prefix helpers (not physical units) — package prefix
+	v, _ := prefix.PrefixParse("1.5G", prefix.SI)
 	fmt.Println(v) // 1.5e9
-	fmt.Println(u.PrefixFormat(1048576, u.IEC)) // 1 Mi
+	fmt.Println(prefix.PrefixFormat(1048576, prefix.IEC)) // 1 Mi
 }
 ```
 
@@ -82,7 +83,7 @@ Conceptual reading order:
 4. [Derived units](https://bougou.github.io/go-unit/en/concepts/derived-units/) — compound units and Intern
 5. [Guides](https://bougou.github.io/go-unit/en/guides/typed-quantities/) — typed quantities, arithmetic, prefixes
 
-API reference: [pkg.go.dev/github.com/bougou/go-unit/pkg/u](https://pkg.go.dev/github.com/bougou/go-unit/pkg/u)
+API reference: [pkg.go.dev/github.com/bougou/go-unit/pkg/u](https://pkg.go.dev/github.com/bougou/go-unit/pkg/u) · [pkg/prefix](https://pkg.go.dev/github.com/bougou/go-unit/pkg/prefix)
 
 ## Local docs preview
 

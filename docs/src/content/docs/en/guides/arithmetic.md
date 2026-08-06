@@ -11,7 +11,9 @@ Quantity arithmetic follows dimensional analysis: add/subtract require matching 
 Operands must share the same (derived) dimension. The second operand converts to the first's unit via the base unit:
 
 ```go
-a := u.Length(1, u.Meter.Prefix(u.Kilo))
+import "github.com/bougou/go-unit/pkg/prefix"
+
+a := u.Length(1, u.Meter.Prefix(prefix.Kilo))
 b := u.Length(500, u.Meter)
 sum := a.Add(b) // 1.5 km — 500 m converted to 0.5 km
 ```
@@ -25,7 +27,7 @@ u.Length(1, u.Meter).Add(u.Time(1, u.Second)) // unchanged
 ### Derived quantities
 
 ```go
-speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(u.Kilo), 1).Time(u.Hour, -1)
+speedUnit := u.NewDerivedUnit().Length(u.Meter.Prefix(prefix.Kilo), 1).Time(u.Hour, -1)
 a := u.NewDerivedQuantity(60, speedUnit)
 b := speedUnit.Of(30)
 a.Add(b) // 90 km/h (same unit)
@@ -38,7 +40,7 @@ a.Add(b) // 90 km/h (same unit)
 Multiplying quantities **adds** derived-dimension exponents and **multiplies** numeric values (with base-unit normalization):
 
 ```go
-u.Length(2, u.Meter.Prefix(u.Kilo)).Mul(u.Length(3, u.Meter))
+u.Length(2, u.Meter.Prefix(prefix.Kilo)).Mul(u.Length(3, u.Meter))
 // 6000 m·m → derived unit km·m or equivalent
 ```
 
@@ -60,7 +62,7 @@ ratio := u.Mass(10, u.Kilogram).Div(u.Mass(2, u.Kilogram))
 ## Speed example (end-to-end)
 
 ```go
-trip := u.Length(120, u.Meter.Prefix(u.Kilo))
+trip := u.Length(120, u.Meter.Prefix(prefix.Kilo))
 drive := u.Time(2, u.Hour)
 avg := trip.Div(drive)
 

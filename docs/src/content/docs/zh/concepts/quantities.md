@@ -29,8 +29,10 @@ q.Format(
 ### 包级构造函数 `(value, unit)`
 
 ```go
+import "github.com/bougou/go-unit/pkg/prefix"
+
 // 类型化基本量
-d := u.Length(10, u.Meter.Prefix(u.Kilo))
+d := u.Length(10, u.Meter.Prefix(prefix.Kilo))
 t := u.Time(30, u.Minute)
 i := u.Current(10, u.Ampere)
 
@@ -43,7 +45,7 @@ v := u.NewDerivedQuantity(220, u.Volt)
 每个类型化基本单位以及每个 `*DerivedUnit` 都有 `Of` 方法，读起来像「这么多该单位」：
 
 ```go
-d := u.Meter.Prefix(u.Kilo).Of(10) // LengthQuantity
+d := u.Meter.Prefix(prefix.Kilo).Of(10) // LengthQuantity
 t := u.Minute.Of(30)    // TimeQuantity
 i := u.Ampere.Of(10)    // CurrentQuantity
 
@@ -55,7 +57,7 @@ v := u.Volt.Of(220)     // DerivedQuantity — 等价于 NewDerivedQuantity(220,
 ### 非类型化
 
 ```go
-q := u.Quantity{Value: 10, Unit: u.Unit(u.Meter.Prefix(u.Kilo))}
+q := u.Quantity{Value: 10, Unit: u.Unit(u.Meter.Prefix(prefix.Kilo))}
 ```
 
 ## 换算
@@ -65,7 +67,7 @@ q := u.Quantity{Value: 10, Unit: u.Unit(u.Meter.Prefix(u.Kilo))}
 换算到同一量纲的 SI 基本单位：
 
 ```go
-u.Length(1, u.Meter.Prefix(u.Kilo)).Base() // {1000, meter}
+u.Length(1, u.Meter.Prefix(prefix.Kilo)).Base() // {1000, meter}
 ```
 
 ### By()
@@ -73,22 +75,24 @@ u.Length(1, u.Meter.Prefix(u.Kilo)).Base() // {1000, meter}
 在**同一量纲**内换单位：
 
 ```go
-u.Length(1000, u.Meter).By(u.Meter.Prefix(u.Kilo)) // 1 km
+u.Length(1000, u.Meter).By(u.Meter.Prefix(prefix.Kilo)) // 1 km
 ```
 
 单位不兼容或未知时，`By` 原样返回。
 
 ### Prefix() — SI 词头缩放
 
-`Anchor.Prefix(factor)` 用 SI 十进制词头缩放锚点单位（惰性注册），不再为每个词头导出常量：
+`Anchor.Prefix(factor)` 用包 `prefix` 中的 SI 十进制词头缩放锚点单位（惰性注册），不再为每个词头导出常量：
 
 ```go
-u.Meter.Prefix(u.Kilo)              // km
-u.Gram.Prefix(u.Milli)              // mg（词头挂在克上）
-u.Gram.Prefix(u.Kilo)               // Kilogram
-u.Kilogram.Prefix(u.Milli)          // Gram（与克互转捷径）
-u.Ohm.Prefix(u.Mega)                // MΩ
-u.Ohm.Of(1e6).By(u.Ohm.Prefix(u.Mega)) // 1 MΩ
+import "github.com/bougou/go-unit/pkg/prefix"
+
+u.Meter.Prefix(prefix.Kilo)              // km
+u.Gram.Prefix(prefix.Milli)              // mg（词头挂在克上）
+u.Gram.Prefix(prefix.Kilo)               // Kilogram
+u.Kilogram.Prefix(prefix.Milli)          // Gram（与克互转捷径）
+u.Ohm.Prefix(prefix.Mega)                // MΩ
+u.Ohm.Of(1e6).By(u.Ohm.Prefix(prefix.Mega)) // 1 MΩ
 
 u.LengthQuantityParse("10 km")
 u.DerivedQuantityParse("1.5 MΩ")
@@ -122,9 +126,9 @@ u.DerivedQuantityParse("5 N")   // OK
 u.DerivedQuantityParse("10 m") // ErrDimension — 应使用 LengthQuantityParse
 ```
 
-每个 `Parse` 都有对应的 `MustParse`（失败时 panic）。
+每个 `Parse` 都有对应的 `MustParse`（失败时 panic），如 `QuantityMustParse`、`LengthQuantityMustParse`、`DerivedQuantityMustParse`、`DerivedUnitMustParse`。
 
-`QuantityParse` **不同于** `PrefixParse`：`"1.5G"` 是数值词头，不是 1.5 吉米。见 [数值词头](../guides/numeric-prefixes/)。
+`QuantityParse` **不同于** `prefix.PrefixParse`：`"1.5G"` 是数值词头，不是 1.5 吉米。见 [数值词头](../guides/numeric-prefixes/)。
 
 ### 限制
 
@@ -138,7 +142,7 @@ u.DerivedQuantityParse("10 m") // ErrDimension — 应使用 LengthQuantityParse
 符号未预注册时，`QuantityParse` 会回退到 `DerivedUnitParse`，对基本单位符号分词并重建 `DerivedUnit`：
 
 ```go
-du, err := u.DerivedUnitParse("km/h") // Length(Meter.Prefix(Kilo),1) · Time(Hour,-1)
+du, err := u.DerivedUnitParse("km/h") // Length(Meter.Prefix(prefix.Kilo),1) · Time(Hour,-1)
 q, err := u.QuantityParse("60 km/h") // 经 fallback 同样生效
 ```
 
@@ -149,7 +153,7 @@ q, err := u.QuantityParse("60 km/h") // 经 fallback 同样生效
 `Compatible` 检查基本量纲是否相同：
 
 ```go
-u.Length(1, u.Meter).Compatible(u.Length(2, u.Meter.Prefix(u.Kilo))) // true
+u.Length(1, u.Meter).Compatible(u.Length(2, u.Meter.Prefix(prefix.Kilo))) // true
 u.Length(1, u.Meter).Compatible(u.Time(1, u.Second))       // false
 ```
 
@@ -175,7 +179,7 @@ u.Mass(1234.5, u.Kilogram).Format(
 量纲组合（乘/除）时得到 `DerivedQuantity`：
 
 ```go
-speed := u.Length(60, u.Meter.Prefix(u.Kilo)).Div(u.Time(1, u.Hour))
+speed := u.Length(60, u.Meter.Prefix(prefix.Kilo)).Div(u.Time(1, u.Hour))
 area := u.Length(3, u.Meter).Mul(u.Length(4, u.Meter))
 ```
 

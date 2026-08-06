@@ -123,7 +123,7 @@ func QuantityMustParse(s string) Quantity {
 // Base converts q to the SI (国际单位制) base unit of its dimension.
 // On failure, returns q unchanged. Prefer TryBase when errors must be observed.
 //
-// Example: Quantity{Value: 1, Unit: Unit(Meter.Prefix(Kilo))}.Base() // 1000 m
+// Example: Quantity{Value: 1, Unit: Unit(Meter.Prefix(prefix.Kilo))}.Base() // 1000 m
 func (q Quantity) Base() Quantity {
 	r, _ := q.TryBase()
 	return r
@@ -149,7 +149,7 @@ func (q Quantity) TryBase() (Quantity, error) {
 // By converts q to another unit within the same dimension.
 // On failure, returns q unchanged. Prefer TryBy when errors must be observed.
 //
-// Example: Length(1000, Meter).By(Meter.Prefix(Kilo)) // 1 km
+// Example: Length(1000, Meter).By(Meter.Prefix(prefix.Kilo)) // 1 km
 func (q Quantity) By(u Unit) Quantity {
 	r, _ := q.TryBy(u)
 	return r

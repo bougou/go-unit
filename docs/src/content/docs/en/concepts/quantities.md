@@ -30,8 +30,10 @@ There are two equivalent ways to attach a value to a unit. Prefer typed / named 
 ### Package constructors `(value, unit)`
 
 ```go
+import "github.com/bougou/go-unit/pkg/prefix"
+
 // Typed base quantities
-d := u.Length(10, u.Meter.Prefix(u.Kilo))
+d := u.Length(10, u.Meter.Prefix(prefix.Kilo))
 t := u.Time(30, u.Minute)
 i := u.Current(10, u.Ampere)
 
@@ -44,7 +46,7 @@ v := u.NewDerivedQuantity(220, u.Volt)
 Every typed base unit and every `*DerivedUnit` has an `Of` method that reads naturally as “this many of that unit”:
 
 ```go
-d := u.Meter.Prefix(u.Kilo).Of(10) // LengthQuantity
+d := u.Meter.Prefix(prefix.Kilo).Of(10) // LengthQuantity
 t := u.Minute.Of(30)    // TimeQuantity
 i := u.Ampere.Of(10)    // CurrentQuantity
 
@@ -56,7 +58,7 @@ v := u.Volt.Of(220)     // DerivedQuantity — same as NewDerivedQuantity(220, u
 ### Untyped
 
 ```go
-q := u.Quantity{Value: 10, Unit: u.Unit(u.Meter.Prefix(u.Kilo))}
+q := u.Quantity{Value: 10, Unit: u.Unit(u.Meter.Prefix(prefix.Kilo))}
 ```
 
 ## Conversion
@@ -66,7 +68,7 @@ q := u.Quantity{Value: 10, Unit: u.Unit(u.Meter.Prefix(u.Kilo))}
 Convert to the SI base unit of the same dimension:
 
 ```go
-u.Length(1, u.Meter.Prefix(u.Kilo)).Base() // {1000, meter}
+u.Length(1, u.Meter.Prefix(prefix.Kilo)).Base() // {1000, meter}
 ```
 
 ### By()
@@ -74,22 +76,24 @@ u.Length(1, u.Meter.Prefix(u.Kilo)).Base() // {1000, meter}
 Convert to another unit **within the same dimension**:
 
 ```go
-u.Length(1000, u.Meter).By(u.Meter.Prefix(u.Kilo)) // 1 km
+u.Length(1000, u.Meter).By(u.Meter.Prefix(prefix.Kilo)) // 1 km
 ```
 
 If units are incompatible or unknown, `By` returns the original quantity unchanged.
 
 ### Prefix() — SI prefix scaling
 
-`Anchor.Prefix(factor)` scales an anchor unit by an SI decimal prefix (lazy registration). Prefixed variants are not exported as separate constants:
+`Anchor.Prefix(factor)` scales an anchor unit by an SI decimal prefix from package `prefix` (lazy registration). Prefixed variants are not exported as separate constants:
 
 ```go
-u.Meter.Prefix(u.Kilo)              // km
-u.Gram.Prefix(u.Milli)              // mg (prefixes attach to gram)
-u.Gram.Prefix(u.Kilo)               // Kilogram
-u.Kilogram.Prefix(u.Milli)          // Gram (shortcut)
-u.Ohm.Prefix(u.Mega)                // MΩ
-u.Ohm.Of(1e6).By(u.Ohm.Prefix(u.Mega)) // 1 MΩ
+import "github.com/bougou/go-unit/pkg/prefix"
+
+u.Meter.Prefix(prefix.Kilo)              // km
+u.Gram.Prefix(prefix.Milli)              // mg (prefixes attach to gram)
+u.Gram.Prefix(prefix.Kilo)               // Kilogram
+u.Kilogram.Prefix(prefix.Milli)          // Gram (shortcut)
+u.Ohm.Prefix(prefix.Mega)                // MΩ
+u.Ohm.Of(1e6).By(u.Ohm.Prefix(prefix.Mega)) // 1 MΩ
 
 u.LengthQuantityParse("10 km")
 u.DerivedQuantityParse("1.5 MΩ")
@@ -123,9 +127,9 @@ u.DerivedQuantityParse("5 N")   // OK
 u.DerivedQuantityParse("10 m") // ErrDimension — use LengthQuantityParse
 ```
 
-Each parser has a `MustParse` variant that panics on error.
+Each parser has a `MustParse` variant that panics on error (`QuantityMustParse`, `LengthQuantityMustParse`, `DerivedQuantityMustParse`, `DerivedUnitMustParse`, …).
 
-`QuantityParse` is **not** `PrefixParse`: `"1.5G"` is a numeric prefix, not `1.5` gigameters. See [Numeric prefixes](../guides/numeric-prefixes/).
+`QuantityParse` is **not** `prefix.PrefixParse`: `"1.5G"` is a numeric prefix, not `1.5` gigameters. See [Numeric prefixes](../guides/numeric-prefixes/).
 
 ### Limitations
 
@@ -139,7 +143,7 @@ Each parser has a `MustParse` variant that panics on error.
 When a symbol is not pre-registered, `QuantityParse` falls back to `DerivedUnitParse`, which tokenizes base-unit symbols and rebuilds a `DerivedUnit`:
 
 ```go
-du, err := u.DerivedUnitParse("km/h") // Length(Meter.Prefix(Kilo),1) · Time(Hour,-1)
+du, err := u.DerivedUnitParse("km/h") // Length(Meter.Prefix(prefix.Kilo),1) · Time(Hour,-1)
 q, err := u.QuantityParse("60 km/h")   // same via fallback
 ```
 
@@ -150,7 +154,7 @@ Only registered **base-unit** symbols participate (`km`, `h`, `kg`, …). Specia
 `Compatible` checks same base dimension:
 
 ```go
-u.Length(1, u.Meter).Compatible(u.Length(2, u.Meter.Prefix(u.Kilo))) // true
+u.Length(1, u.Meter).Compatible(u.Length(2, u.Meter.Prefix(prefix.Kilo))) // true
 u.Length(1, u.Meter).Compatible(u.Time(1, u.Second))       // false
 ```
 
@@ -176,7 +180,7 @@ u.Mass(1234.5, u.Kilogram).Format(
 When dimensions combine (multiply/divide), the result is a `DerivedQuantity`:
 
 ```go
-speed := u.Length(60, u.Meter.Prefix(u.Kilo)).Div(u.Time(1, u.Hour))
+speed := u.Length(60, u.Meter.Prefix(prefix.Kilo)).Div(u.Time(1, u.Hour))
 // DerivedQuantity{60, km/h unit}
 
 area := u.Length(3, u.Meter).Mul(u.Length(4, u.Meter))

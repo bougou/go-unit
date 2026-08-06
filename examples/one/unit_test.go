@@ -3,6 +3,7 @@ package one
 import (
 	"fmt"
 
+	"github.com/bougou/go-unit/pkg/prefix"
 	"github.com/bougou/go-unit/pkg/u"
 )
 
@@ -38,9 +39,9 @@ func Example_constructors() {
 // Example_resistanceWithPrefixes builds a megaohm from μA-scale current.
 func Example_resistanceWithPrefixes() {
 	v := u.Volt.Of(1)
-	i := u.Ampere.Prefix(u.Micro).Of(1)
-	r := v.Div(i).By(u.Ohm).Prefix(u.Mega)
-	r2 := v.Div(i).Prefix(u.Mega)
+	i := u.Ampere.Prefix(prefix.Micro).Of(1)
+	r := v.Div(i).By(u.Ohm).Prefix(prefix.Mega)
+	r2 := v.Div(i).Prefix(prefix.Mega)
 
 	fmt.Println("R =", r.Format())
 	fmt.Println("R2 =", r2.Format())
@@ -51,8 +52,8 @@ func Example_resistanceWithPrefixes() {
 
 // Example_siPrefix converts a bare value into a prefixed unit (km, MΩ).
 func Example_siPrefix() {
-	d := u.Length(5, u.Meter.Prefix(u.Kilo))
-	r := u.Ohm.Of(2e6).Prefix(u.Mega)
+	d := u.Length(5, u.Meter.Prefix(prefix.Kilo))
+	r := u.Ohm.Of(2e6).Prefix(prefix.Mega)
 
 	fmt.Println(d)
 	fmt.Println(r.Format())
@@ -63,9 +64,9 @@ func Example_siPrefix() {
 
 // Example_currentFromPowerAndResistance solves I = √(P/R).
 func Example_currentFromPowerAndResistance() {
-	p := u.Watt.Prefix(u.Milli).Of(20)
-	r := u.Ohm.Of(5000).Prefix(u.Kilo)
-	i := p.Div(r).Sqrt().Prefix(u.Milli)
+	p := u.Watt.Prefix(prefix.Milli).Of(20)
+	r := u.Ohm.Of(5000).Prefix(prefix.Kilo)
+	i := p.Div(r).Sqrt().Prefix(prefix.Milli)
 
 	fmt.Println("P =", p.Format())
 	fmt.Println("R =", r.Format())
@@ -87,7 +88,7 @@ func Example_energyFromPowerAndTime() {
 
 	fmt.Println("P·t =", w.Format())
 
-	w = w.By(u.WattHour).Prefix(u.Kilo)
+	w = w.By(u.WattHour).Prefix(prefix.Kilo)
 	fmt.Println("→", w.Format())
 
 	w = w.By(u.Joule)
@@ -102,7 +103,7 @@ func Example_energyFromPowerAndTime() {
 func Example_yearlyEnergyKilowattHour() {
 	p := u.Watt.Of(60)
 	t := u.Day.Of(365)
-	e := p.Mul(t).By(u.WattHour).Prefix(u.Kilo)
+	e := p.Mul(t).By(u.WattHour).Prefix(prefix.Kilo)
 
 	fmt.Println("E =", e.Format())
 	// Output:
@@ -112,7 +113,7 @@ func Example_yearlyEnergyKilowattHour() {
 // Example_runtimeFromEnergyAndPower solves t = E/P for a battery-like energy store.
 func Example_runtimeFromEnergyAndPower() {
 	p := u.Watt.Of(340)
-	e := u.WattHour.Prefix(u.Kilo).Of(4)
+	e := u.WattHour.Prefix(prefix.Kilo).Of(4)
 	t := e.Div(p).ByTime(u.Hour)
 
 	fmt.Println("E =", e.Format())
@@ -128,7 +129,7 @@ func Example_runtimeFromEnergyAndPower() {
 func Example_electricalHorsepowerEnergy() {
 	p := u.ElectricalHorsePower.Of(5)
 	t := u.Hour.Of(2)
-	e := p.Mul(t).By(u.WattHour).Prefix(u.Kilo)
+	e := p.Mul(t).By(u.WattHour).Prefix(prefix.Kilo)
 
 	fmt.Println("E =", e.Format())
 	// Output:

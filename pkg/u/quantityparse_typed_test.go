@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestLengthQuantityParse(t *testing.T) {
@@ -11,7 +13,7 @@ func TestLengthQuantityParse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.Value != 10 || got.Unit != Unit(Meter.Prefix(Kilo)) {
+	if got.Value != 10 || got.Unit != Unit(Meter.Prefix(prefix.Kilo)) {
 		t.Fatalf("got %+v, want 10 km", got)
 	}
 

@@ -1,5 +1,9 @@
 package u
 
+import (
+	"github.com/bougou/go-unit/pkg/prefix"
+)
+
 // Typed unit and quantity wrappers provide compile-time dimension safety (编译期量纲安全).
 // Each SI (国际单位制) base dimension has a *Unit alias and a *Quantity struct that delegate
 // to Unit and Quantity. Methods mirror Quantity: Add/Sub require the same dimension;
@@ -19,14 +23,14 @@ type LengthQuantity Quantity
 
 // Length creates a length quantity.
 //
-// Example: Length(42, Meter.Prefix(Kilo)) // 42 km
+// Example: Length(42, Meter.Prefix(prefix.Kilo)) // 42 km
 func Length(value float64, unit LengthUnit) LengthQuantity {
 	return LengthQuantity{Value: value, Unit: Unit(unit)}
 }
 
 // Of creates a length quantity with value in u.
 //
-// Example: Meter.Prefix(Kilo).Of(42) // 42 km
+// Example: Meter.Prefix(prefix.Kilo).Of(42) // 42 km
 func (u LengthUnit) Of(value float64) LengthQuantity {
 	return Length(value, u)
 }
@@ -54,7 +58,7 @@ func (q LengthQuantity) TryBase() (LengthQuantity, error) {
 
 // By converts q to another length unit.
 //
-// Example: Length(1000, Meter).By(Meter.Prefix(Kilo)) // 1 km
+// Example: Length(1000, Meter).By(Meter.Prefix(prefix.Kilo)) // 1 km
 func (q LengthQuantity) By(u LengthUnit) LengthQuantity {
 	return LengthQuantity(Quantity(q).By(Unit(u)))
 }
@@ -67,8 +71,8 @@ func (q LengthQuantity) TryBy(u LengthUnit) (LengthQuantity, error) {
 
 // Prefix converts q to LengthUnit(q.Unit).Prefix(factor).
 //
-// Example: Length(1000, Meter).Prefix(Kilo) // 1 km
-func (q LengthQuantity) Prefix(factor SIPrefix) LengthQuantity {
+// Example: Length(1000, Meter).Prefix(prefix.Kilo) // 1 km
+func (q LengthQuantity) Prefix(factor prefix.SIPrefix) LengthQuantity {
 	return q.By(LengthUnit(q.Unit).Prefix(factor))
 }
 
@@ -101,7 +105,7 @@ func (q LengthQuantity) TrySub(other LengthQuantity) (LengthQuantity, error) {
 
 // Mul returns the product as a derived quantity.
 //
-// Example: Length(10, Meter.Prefix(Kilo)).Mul(Length(3, Meter)) // 30 km·m
+// Example: Length(10, Meter.Prefix(prefix.Kilo)).Mul(Length(3, Meter)) // 30 km·m
 func (q LengthQuantity) Mul(other derivedQuantity) DerivedQuantity {
 	return mulQuantities(q, other)
 }
@@ -113,7 +117,7 @@ func (q LengthQuantity) TryMul(other derivedQuantity) (DerivedQuantity, error) {
 
 // Div returns the quotient as a derived quantity.
 //
-// Example: Length(10, Meter.Prefix(Kilo)).Div(Time(2, Hour)) // 5 km/h
+// Example: Length(10, Meter.Prefix(prefix.Kilo)).Div(Time(2, Hour)) // 5 km/h
 func (q LengthQuantity) Div(other derivedQuantity) DerivedQuantity {
 	return divQuantities(q, other)
 }
@@ -193,8 +197,8 @@ func (q TimeQuantity) TryBy(u TimeUnit) (TimeQuantity, error) {
 
 // Prefix converts q to TimeUnit(q.Unit).Prefix(factor).
 //
-// Example: Time(1, Second).Prefix(Milli) // 1000 ms
-func (q TimeQuantity) Prefix(factor SIPrefix) TimeQuantity {
+// Example: Time(1, Second).Prefix(prefix.Milli) // 1000 ms
+func (q TimeQuantity) Prefix(factor prefix.SIPrefix) TimeQuantity {
 	return q.By(TimeUnit(q.Unit).Prefix(factor))
 }
 
@@ -315,8 +319,8 @@ func (q MassQuantity) TryBy(u MassUnit) (MassQuantity, error) {
 
 // Prefix converts q to MassUnit(q.Unit).Prefix(factor).
 //
-// Example: Mass(1, Kilogram).Prefix(Milli) // 1000 g
-func (q MassQuantity) Prefix(factor SIPrefix) MassQuantity {
+// Example: Mass(1, Kilogram).Prefix(prefix.Milli) // 1000 g
+func (q MassQuantity) Prefix(factor prefix.SIPrefix) MassQuantity {
 	return q.By(MassUnit(q.Unit).Prefix(factor))
 }
 
@@ -439,8 +443,8 @@ func (q CurrentQuantity) TryBy(u CurrentUnit) (CurrentQuantity, error) {
 
 // Prefix converts q to CurrentUnit(q.Unit).Prefix(factor).
 //
-// Example: Current(1, Ampere).Prefix(Milli) // 1000 mA
-func (q CurrentQuantity) Prefix(factor SIPrefix) CurrentQuantity {
+// Example: Current(1, Ampere).Prefix(prefix.Milli) // 1000 mA
+func (q CurrentQuantity) Prefix(factor prefix.SIPrefix) CurrentQuantity {
 	return q.By(CurrentUnit(q.Unit).Prefix(factor))
 }
 
@@ -562,8 +566,8 @@ func (q TemperatureQuantity) TryBy(u TemperatureUnit) (TemperatureQuantity, erro
 // Prefix converts q to TemperatureUnit(q.Unit).Prefix(factor).
 // Affine units reject Prefix and therefore panic.
 //
-// Example: Temperature(1, Kelvin).Prefix(Milli) // 1000 mK
-func (q TemperatureQuantity) Prefix(factor SIPrefix) TemperatureQuantity {
+// Example: Temperature(1, Kelvin).Prefix(prefix.Milli) // 1000 mK
+func (q TemperatureQuantity) Prefix(factor prefix.SIPrefix) TemperatureQuantity {
 	return q.By(TemperatureUnit(q.Unit).Prefix(factor))
 }
 
@@ -684,8 +688,8 @@ func (q AmountQuantity) TryBy(u AmountUnit) (AmountQuantity, error) {
 
 // Prefix converts q to AmountUnit(q.Unit).Prefix(factor).
 //
-// Example: Amount(1, Mole).Prefix(Milli) // 1000 mmol
-func (q AmountQuantity) Prefix(factor SIPrefix) AmountQuantity {
+// Example: Amount(1, Mole).Prefix(prefix.Milli) // 1000 mmol
+func (q AmountQuantity) Prefix(factor prefix.SIPrefix) AmountQuantity {
 	return q.By(AmountUnit(q.Unit).Prefix(factor))
 }
 
@@ -806,8 +810,8 @@ func (q LuminousQuantity) TryBy(u LuminousUnit) (LuminousQuantity, error) {
 
 // Prefix converts q to LuminousUnit(q.Unit).Prefix(factor).
 //
-// Example: Luminous(1, Candela).Prefix(Milli) // 1000 mcd
-func (q LuminousQuantity) Prefix(factor SIPrefix) LuminousQuantity {
+// Example: Luminous(1, Candela).Prefix(prefix.Milli) // 1000 mcd
+func (q LuminousQuantity) Prefix(factor prefix.SIPrefix) LuminousQuantity {
 	return q.By(LuminousUnit(q.Unit).Prefix(factor))
 }
 

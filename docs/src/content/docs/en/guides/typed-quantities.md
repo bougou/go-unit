@@ -24,17 +24,19 @@ Constants (`Meter`, `Kilogram`, `Hour`, …) are typed aliases of `Unit` in `uni
 
 ## Basic usage
 
-Two equivalent constructors — package function `(value, unit)` or unit method `Of(value)`:
+Two equivalent constructors — package function `(value, unit)` or unit method `Of(value)`. SI decimal factors such as `prefix.Kilo` come from `github.com/bougou/go-unit/pkg/prefix`:
 
 ```go
-d := u.Length(42, u.Meter.Prefix(u.Kilo))
+import "github.com/bougou/go-unit/pkg/prefix"
+
+d := u.Length(42, u.Meter.Prefix(prefix.Kilo))
 // same as:
-d = u.Meter.Prefix(u.Kilo).Of(42)
+d = u.Meter.Prefix(prefix.Kilo).Of(42)
 
 fmt.Println(d) // "42 km"
 
 base := d.Base()           // 42000 m
-km := base.By(u.Meter.Prefix(u.Kilo)) // back to 42 km
+km := base.By(u.Meter.Prefix(prefix.Kilo)) // back to 42 km
 ```
 
 For SI derived units the same pair exists: `NewDerivedQuantity(220, u.Volt)` and `u.Volt.Of(220)`. See [Quantities — Construction](../concepts/quantities/#construction).
@@ -70,7 +72,7 @@ Incompatible operands: `Add` / `Sub` return the receiver unchanged.
 `Mul` and `Div` accept any `derivedQuantity` (typed base quantities or `DerivedQuantity`) and return `DerivedQuantity`:
 
 ```go
-distance := u.Length(10, u.Meter.Prefix(u.Kilo))
+distance := u.Length(10, u.Meter.Prefix(prefix.Kilo))
 duration := u.Time(2, u.Hour)
 speed := distance.Div(duration) // 5 km/h
 

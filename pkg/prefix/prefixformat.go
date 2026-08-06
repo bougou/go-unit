@@ -1,4 +1,4 @@
-package u
+package prefix
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type prefixFormatOption struct {
 	precision       int         // default 0
 	roundMethod     RoundMethod // applies only when precision is 0
 	roundDifference float64     // applies only when roundMethod is RoundMethodDifference
-	prefix          Symbol
+	prefix          PrefixSymbol
 }
 
 type prefixFormatOptionFn = func(opt *prefixFormatOption)
@@ -28,7 +28,7 @@ func newPrefixFormatOption(optionFns ...prefixFormatOptionFn) prefixFormatOption
 }
 
 // WithPrefix forces a specific prefix symbol instead of auto-selecting from val.
-func WithPrefix(prefix Symbol) prefixFormatOptionFn {
+func WithPrefix(prefix PrefixSymbol) prefixFormatOptionFn {
 	return func(opt *prefixFormatOption) { opt.prefix = prefix }
 }
 

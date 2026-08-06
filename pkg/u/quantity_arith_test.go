@@ -3,16 +3,18 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestQuantityAddSub(t *testing.T) {
-	sum := Length(5, Meter.Prefix(Kilo)).Add(Length(500, Meter))
-	if sum.Value != 5.5 || sum.Unit != Unit(Meter.Prefix(Kilo)) {
+	sum := Length(5, Meter.Prefix(prefix.Kilo)).Add(Length(500, Meter))
+	if sum.Value != 5.5 || sum.Unit != Unit(Meter.Prefix(prefix.Kilo)) {
 		t.Fatalf("Add = %+v, want 5.5 km", sum)
 	}
 
-	diff := Length(5, Meter.Prefix(Kilo)).Sub(Length(500, Meter))
-	if diff.Value != 4.5 || diff.Unit != Unit(Meter.Prefix(Kilo)) {
+	diff := Length(5, Meter.Prefix(prefix.Kilo)).Sub(Length(500, Meter))
+	if diff.Value != 4.5 || diff.Unit != Unit(Meter.Prefix(prefix.Kilo)) {
 		t.Fatalf("Sub = %+v, want 4.5 km", diff)
 	}
 
@@ -41,7 +43,7 @@ func TestQuantityAddAffineTemperature(t *testing.T) {
 }
 
 func TestQuantityMulDiv(t *testing.T) {
-	area := Length(2, Meter.Prefix(Kilo)).Mul(Length(3, Meter))
+	area := Length(2, Meter.Prefix(prefix.Kilo)).Mul(Length(3, Meter))
 	if math.Abs(area.Value-0.006) > 1e-12 {
 		t.Fatalf("Mul value = %v, want 0.006", area.Value)
 	}
@@ -49,7 +51,7 @@ func TestQuantityMulDiv(t *testing.T) {
 		t.Fatalf("Mul unit = %q, want km²", area.Unit.Symbol(WithExpSign(ExpSignSup)))
 	}
 
-	speed := Length(10, Meter.Prefix(Kilo)).Div(Time(2, Hour))
+	speed := Length(10, Meter.Prefix(prefix.Kilo)).Div(Time(2, Hour))
 	if speed.Value != 5 {
 		t.Fatalf("Div value = %v, want 5", speed.Value)
 	}
@@ -95,7 +97,7 @@ func TestQuantityMulVDivV(t *testing.T) {
 }
 
 func TestDerivedQuantityAddMul(t *testing.T) {
-	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(Kilo)), 1).Time(TimeUnit(Hour), -1)
+	speedUnit := NewDerivedUnit().Length(LengthUnit(Meter.Prefix(prefix.Kilo)), 1).Time(TimeUnit(Hour), -1)
 	a := NewDerivedQuantity(60, speedUnit)
 	b := NewDerivedQuantity(30, speedUnit)
 
@@ -105,7 +107,7 @@ func TestDerivedQuantityAddMul(t *testing.T) {
 	}
 
 	// Proportional cross-unit add: 36 km/h + 10 m/s = 72 km/h
-	ms := speedUnit.SI()
+	ms := speedUnit.Base()
 	cross := NewDerivedQuantity(36, speedUnit).Add(NewDerivedQuantity(10, ms))
 	if math.Abs(cross.Value-72) > 1e-9 || cross.Unit != speedUnit {
 		t.Fatalf("cross-unit Add = %+v, want 72 km/h", cross)
@@ -202,8 +204,8 @@ func TestDerivedQuantityMulDivBaseQuantity(t *testing.T) {
 
 func TestDerivedQuantitySqrtPowerResistance(t *testing.T) {
 	// I = √(P/R): 20 mW / 5 kΩ → 2 mA
-	p := Watt.Prefix(Milli).Of(20)
-	r := Ohm.Of(5000).Prefix(Kilo)
+	p := Watt.Prefix(prefix.Milli).Of(20)
+	r := Ohm.Of(5000).Prefix(prefix.Kilo)
 	i := p.Div(r).Sqrt()
 	if math.Abs(i.Value-0.002) > 1e-12 {
 		t.Fatalf("√(P/R) value = %v, want 0.002 A", i.Value)
@@ -217,7 +219,7 @@ func TestDerivedQuantitySqrtPowerResistance(t *testing.T) {
 }
 
 func TestDerivedQuantitySqrtArea(t *testing.T) {
-	area := Length(2, Meter.Prefix(Kilo)).Mul(Length(8, Meter.Prefix(Kilo))) // 16 km²
+	area := Length(2, Meter.Prefix(prefix.Kilo)).Mul(Length(8, Meter.Prefix(prefix.Kilo))) // 16 km²
 	side := area.Sqrt()
 	if math.Abs(side.Value-4) > 1e-12 {
 		t.Fatalf("√(area) value = %v, want 4 km", side.Value)

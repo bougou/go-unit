@@ -3,28 +3,30 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestDerivedUnitP(t *testing.T) {
-	mega := Ohm.Prefix(Mega)
-	if mega.PrefixScale() != float64(Mega) {
-		t.Fatalf("PrefixScale() = %g, want %g", mega.PrefixScale(), float64(Mega))
+	mega := Ohm.Prefix(prefix.Mega)
+	if mega.PrefixScale() != float64(prefix.Mega) {
+		t.Fatalf("PrefixScale() = %g, want %g", mega.PrefixScale(), float64(prefix.Mega))
 	}
 	if mega.Symbol() != "MΩ" {
 		t.Fatalf("named symbol = %q, want MΩ", mega.Symbol())
 	}
-	if mega.FactorToBase() != float64(Mega) {
-		t.Fatalf("FactorToBase() = %g, want %g", mega.FactorToBase(), float64(Mega))
+	if mega.FactorToBase() != float64(prefix.Mega) {
+		t.Fatalf("FactorToBase() = %g, want %g", mega.FactorToBase(), float64(prefix.Mega))
 	}
 
-	micro := Ohm.Prefix(Micro)
+	micro := Ohm.Prefix(prefix.Micro)
 	if micro.Symbol() != "μΩ" {
 		t.Fatalf("named symbol = %q, want μΩ", micro.Symbol())
 	}
 
-	back := mega.Prefix(Micro)
+	back := mega.Prefix(prefix.Micro)
 	if back != Ohm {
-		t.Fatalf("Mega then Micro should yield Ohm, got %v (%s)", back, back.Symbol())
+		t.Fatalf("prefix.Mega then prefix.Micro should yield Ohm, got %v (%s)", back, back.Symbol())
 	}
 
 	q := Ohm.Of(1e6).By(mega)
@@ -41,8 +43,8 @@ func TestParsePrefixedSpecialName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-	if q.Unit.PrefixScale() != float64(Mega) {
-		t.Fatalf("PrefixScale = %g, want %g", q.Unit.PrefixScale(), float64(Mega))
+	if q.Unit.PrefixScale() != float64(prefix.Mega) {
+		t.Fatalf("PrefixScale = %g, want %g", q.Unit.PrefixScale(), float64(prefix.Mega))
 	}
 	if q.Value != 1.5 {
 		t.Fatalf("value = %g, want 1.5", q.Value)
@@ -53,8 +55,8 @@ func TestParsePrefixedSpecialName(t *testing.T) {
 		t.Fatalf("parse kN: %v", err)
 	}
 	du, ok := q2.Unit.DerivedUnit()
-	if !ok || du.PrefixScale() != float64(Kilo) {
-		t.Fatalf("kN PrefixScale = %v ok=%v, want Kilo", du, ok)
+	if !ok || du.PrefixScale() != float64(prefix.Kilo) {
+		t.Fatalf("kN PrefixScale = %v ok=%v, want prefix.Kilo", du, ok)
 	}
 }
 
@@ -62,7 +64,7 @@ func TestWattHourAndKilowattHour(t *testing.T) {
 	if WattHour.FactorToBase() != 3600 {
 		t.Fatalf("WattHour FactorToBase = %g, want 3600", WattHour.FactorToBase())
 	}
-	kWh := WattHour.Prefix(Kilo)
+	kWh := WattHour.Prefix(prefix.Kilo)
 	if kWh.FactorToBase() != 3.6e6 {
 		t.Fatalf("kW·h FactorToBase = %g, want 3.6e6", kWh.FactorToBase())
 	}
@@ -79,9 +81,9 @@ func TestWattHourAndKilowattHour(t *testing.T) {
 	if wh.Value != 20 || wh.Unit != WattHour {
 		t.Fatalf("By(WattHour) = %v %q, want 20 W·h", wh.Value, wh.Unit.Symbol())
 	}
-	got := wh.Prefix(Kilo)
+	got := wh.Prefix(prefix.Kilo)
 	if got.Value != 0.02 || got.Unit.Symbol() != "kW·h" {
-		t.Fatalf("Prefix(Kilo) = %v %q, want 0.02 kW·h", got.Value, got.Unit.Symbol())
+		t.Fatalf("Prefix(prefix.Kilo) = %v %q, want 0.02 kW·h", got.Value, got.Unit.Symbol())
 	}
 	if got.Format(WithCompoundSymbol(true)) != "0.02 k(kg·m^2·s^-2)" {
 		t.Fatalf("Format(compound) = %q, want 0.02 k(kg·m^2·s^-2)", got.Format(WithCompoundSymbol(true)))

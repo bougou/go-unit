@@ -1,7 +1,7 @@
 package u
 
 // 长度 (L, length)，基本单位：米 (meter)。
-// SI 词头倍数用 Meter.Prefix(prefix)，例如 Meter.Prefix(Kilo) → km。
+// SI 词头倍数用 Meter.Prefix(prefix)，例如 Meter.Prefix(prefix.Kilo) → km。
 
 const (
 	Meter LengthUnit = "meter" // m, 米
@@ -43,8 +43,8 @@ const (
 )
 
 // 质量 (M, mass)，基本单位：千克 (kilogram)。
-// SI 词头挂在 Gram 上：Gram.Prefix(Milli) → mg；Gram.Prefix(Kilo) → Kilogram。
-// Kilogram.Prefix(Milli) → Gram 是与克互转的捷径。
+// SI 词头挂在 Gram 上：Gram.Prefix(prefix.Milli) → mg；Gram.Prefix(prefix.Kilo) → Kilogram。
+// Kilogram.Prefix(prefix.Milli) → Gram 是与克互转的捷径。
 
 const (
 	Gram     MassUnit = "gram"     // g, 克（词头附着根）
@@ -78,7 +78,7 @@ const (
 )
 
 // 时间 (T, time)，基本单位：秒 (second)。
-// SI 词头倍数用 Second.Prefix(prefix)，例如 Second.Prefix(Milli) → ms。
+// SI 词头倍数用 Second.Prefix(prefix)，例如 Second.Prefix(prefix.Milli) → ms。
 
 const (
 	Second TimeUnit = "second" // s, 秒
@@ -95,7 +95,7 @@ const (
 )
 
 // 电流 (I, electric current)，基本单位：安培 (ampere)。
-// SI 词头倍数用 Ampere.Prefix(prefix)，例如 Ampere.Prefix(Micro) → μA。
+// SI 词头倍数用 Ampere.Prefix(prefix)，例如 Ampere.Prefix(prefix.Micro) → μA。
 
 const (
 	Ampere CurrentUnit = "ampere" // A, 安培
@@ -103,7 +103,7 @@ const (
 )
 
 // 温度 (Θ, thermodynamic temperature)，基本单位：开尔文 (kelvin)。
-// SI 词头倍数用 Kelvin.Prefix(prefix)，例如 Kelvin.Prefix(Milli) → mK。
+// SI 词头倍数用 Kelvin.Prefix(prefix)，例如 Kelvin.Prefix(prefix.Milli) → mK。
 
 const (
 	Kelvin     TemperatureUnit = "kelvin"     // K, 开尔文
@@ -113,7 +113,7 @@ const (
 )
 
 // 物质的量 (N, amount of substance)，基本单位：摩尔 (mole)。
-// SI 词头倍数用 Mole.Prefix(prefix)，例如 Mole.Prefix(Milli) → mmol。
+// SI 词头倍数用 Mole.Prefix(prefix)，例如 Mole.Prefix(prefix.Milli) → mmol。
 
 const (
 	Mole      AmountUnit = "mole"       // mol, 摩尔
@@ -121,7 +121,7 @@ const (
 )
 
 // 发光强度 (J, luminous intensity)，基本单位：坎德拉 (candela)。
-// SI 词头倍数用 Candela.Prefix(prefix)，例如 Candela.Prefix(Milli) → mcd。
+// SI 词头倍数用 Candela.Prefix(prefix)，例如 Candela.Prefix(prefix.Milli) → mcd。
 
 const (
 	Candela LuminousUnit = "candela" // cd, 坎德拉

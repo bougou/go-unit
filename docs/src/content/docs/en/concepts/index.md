@@ -54,6 +54,6 @@ Both delegate to the same conversion and arithmetic logic.
 
 Unregistered derived symbols built from base units (e.g. `km/h`) are parsed via `DerivedUnitParse` when lookup fails. SI special names (`N`, `Hz`) still require registry lookup.
 
-Numeric **prefixes** (K, M, Mi) are documented separately because they operate on plain numbers, not on dimensional quantities. Use `QuantityParse` for physical units; use `PrefixParse` for plain numeric scaling.
+Numeric **prefixes** (K, M, Mi) live in package [`prefix`](../guides/numeric-prefixes/) because they operate on plain numbers, not on dimensional quantities. Use `QuantityParse` for physical units; use `prefix.PrefixParse` for plain numeric scaling.
 
 Next: [Dimensions →](dimensions/)

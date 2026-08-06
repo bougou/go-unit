@@ -3,6 +3,8 @@ package u
 import (
 	"math"
 	"testing"
+
+	"github.com/bougou/go-unit/pkg/prefix"
 )
 
 func TestDerivedUnitParse(t *testing.T) {
@@ -16,7 +18,7 @@ func TestDerivedUnitParse(t *testing.T) {
 				if du.Dim() != DimSpeed {
 					t.Fatalf("dim = %+v, want speed", du.Dim())
 				}
-				if du.l.unit != Unit(Meter.Prefix(Kilo)) || du.l.exp != 1 {
+				if du.l.unit != Unit(Meter.Prefix(prefix.Kilo)) || du.l.exp != 1 {
 					t.Fatalf("length term = %+v", du.l)
 				}
 				if du.t.unit != Unit(Hour) || du.t.exp != -1 {
@@ -67,6 +69,13 @@ func TestDerivedUnitParseSpecialNameRejected(t *testing.T) {
 	}
 }
 
+func TestDerivedUnitMustParse(t *testing.T) {
+	du := DerivedUnitMustParse("km/h")
+	if got := du.Dim(); !got.Equal(DerivedDimension{L: 1, T: -1}) {
+		t.Fatalf("DerivedUnitMustParse(km/h) dim = %#v, want L¹T⁻¹", got)
+	}
+}
+
 func TestDerivedUnitParseSeparatorRules(t *testing.T) {
 	if _, err := DerivedUnitParse("kmh"); err == nil {
 		t.Fatal("DerivedUnitParse(kmh) should fail without separator")
@@ -76,7 +85,7 @@ func TestDerivedUnitParseSeparatorRules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if du.t.unit != Unit(Second.Prefix(Milli)) || du.t.exp != 1 {
+	if du.t.unit != Unit(Second.Prefix(prefix.Milli)) || du.t.exp != 1 {
 		t.Fatalf("ms = %+v, want millisecond", du.t)
 	}
 
